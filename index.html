@@ -1,0 +1,1946 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Baki's Döner Jagd</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --arcade-gold: #fbbf24;
+        --arcade-red: #ef4444;
+        --arcade-bg: #090d16;
+      }
+      body {
+        background-color: var(--arcade-bg);
+        background-image:
+          radial-gradient(
+            circle at 50% 15%,
+            rgba(245, 158, 11, 0.14) 0%,
+            transparent 60%
+          ),
+          radial-gradient(
+            circle at 80% 80%,
+            rgba(239, 68, 68, 0.08) 0%,
+            transparent 50%
+          );
+        font-family: "Inter", sans-serif;
+        color: #f8fafc;
+        user-select: none;
+        -webkit-user-select: none;
+        overflow-x: hidden;
+      }
+      .font-pixel {
+        font-family: "Press Start 2P", monospace;
+      }
+      canvas {
+        image-rendering: -moz-crisp-edges;
+        image-rendering: -webkit-crisp-edges;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+        outline: none;
+      }
+      .arcade-cabinet {
+        box-shadow:
+          0 0 0 3px #1e293b,
+          0 0 0 6px #d97706,
+          0 20px 50px -10px rgba(0, 0, 0, 0.85),
+          0 0 35px rgba(245, 158, 11, 0.22);
+      }
+      .crt-lines {
+        background: linear-gradient(
+          rgba(18, 16, 16, 0) 50%,
+          rgba(0, 0, 0, 0.2) 50%
+        );
+        background-size: 100% 4px;
+      }
+      .btn-arcade {
+        background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+        box-shadow:
+          0 4px 0 #92400e,
+          0 6px 15px rgba(245, 158, 11, 0.35);
+        transition: all 0.1s ease;
+      }
+      .btn-arcade:hover {
+        filter: brightness(1.08);
+        transform: translateY(-1px);
+        box-shadow:
+          0 5px 0 #92400e,
+          0 8px 20px rgba(245, 158, 11, 0.5);
+      }
+      .btn-arcade:active {
+        transform: translateY(3px);
+        box-shadow: 0 1px 0 #92400e;
+      }
+      .dpad-btn {
+        background: linear-gradient(180deg, #334155 0%, #1e293b 100%);
+        box-shadow: 0 4px 0 #0f172a;
+        transition:
+          transform 0.05s ease,
+          background 0.1s ease;
+        touch-action: manipulation;
+      }
+      .dpad-btn:hover {
+        background: linear-gradient(180deg, #475569 0%, #334155 100%);
+      }
+      .dpad-btn:active,
+      .dpad-btn.active-press {
+        transform: translateY(3px);
+        box-shadow: 0 1px 0 #0f172a;
+        background: #f59e0b;
+        color: #090d16;
+      }
+    </style>
+  </head>
+  <body
+    class="min-h-screen flex flex-col items-center justify-center p-2 sm:p-4"
+  >
+    <!-- Main Wrapper -->
+    <div
+      class="w-full max-w-6xl flex flex-col lg:flex-row items-center lg:items-start justify-center gap-5"
+    >
+      <!-- Left / Center Column: Arcade Machine -->
+      <div class="flex flex-col items-center w-full max-w-[540px]">
+        <!-- Top Marquee Header -->
+        <div
+          class="w-full bg-gradient-to-r from-red-900 via-amber-600 to-red-900 p-0.5 rounded-t-2xl shadow-lg border-t border-amber-400/40"
+        >
+          <div
+            class="bg-slate-950/90 rounded-t-[14px] px-4 py-2.5 flex items-center justify-between"
+          >
+            <div class="flex items-center gap-2.5">
+              <canvas
+                id="headerBakiIcon"
+                width="32"
+                height="32"
+                class="w-8 h-8"
+              ></canvas>
+              <div>
+                <h1
+                  class="font-pixel text-xs sm:text-base text-amber-400 tracking-wider drop-shadow-[0_2px_2px_rgba(0,0,0,0.9)]"
+                >
+                  BAKI'S DÖNER JAGD
+                </h1>
+                <p
+                  class="text-[10px] text-amber-200/70 tracking-widest uppercase font-semibold"
+                >
+                  Tenryu Dragon Arcade Edition
+                </p>
+              </div>
+            </div>
+
+            <!-- Audio & Pause Controls -->
+            <div class="flex items-center gap-2">
+              <button
+                id="muteBtn"
+                type="button"
+                class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+                title="Ton An/Aus"
+              >
+                <span id="muteIcon">🔊</span>
+              </button>
+              <button
+                id="pauseBtn"
+                type="button"
+                class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs font-bold transition cursor-pointer"
+                title="Pause (P)"
+              >
+                ⏸️
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- HUD Bar (Score, Highscore, Level, Lives) -->
+        <div
+          class="w-full bg-slate-900 border-x-2 border-slate-800 px-3 py-2 grid grid-cols-4 gap-2 items-center text-center shadow-inner"
+        >
+          <div
+            class="bg-slate-950/80 rounded-lg py-1 px-2 border border-slate-800/80"
+          >
+            <div
+              class="text-[9px] text-slate-400 uppercase font-bold tracking-wider"
+            >
+              Punkte
+            </div>
+            <div
+              id="scoreEl"
+              class="font-pixel text-xs sm:text-sm text-amber-400 mt-0.5"
+            >
+              0
+            </div>
+          </div>
+          <div
+            class="bg-slate-950/80 rounded-lg py-1 px-2 border border-slate-800/80"
+          >
+            <div
+              class="text-[9px] text-slate-400 uppercase font-bold tracking-wider"
+            >
+              Highscore
+            </div>
+            <div
+              id="highScoreEl"
+              class="font-pixel text-xs sm:text-sm text-emerald-400 mt-0.5"
+            >
+              0
+            </div>
+          </div>
+          <div
+            class="bg-slate-950/80 rounded-lg py-1 px-2 border border-slate-800/80"
+          >
+            <div
+              class="text-[9px] text-slate-400 uppercase font-bold tracking-wider"
+            >
+              Level
+            </div>
+            <div
+              id="levelEl"
+              class="font-pixel text-xs sm:text-sm text-sky-400 mt-0.5"
+            >
+              1
+            </div>
+            <div
+              id="levelRankEl"
+              class="text-[9px] text-amber-300/90 font-semibold truncate"
+            >
+              Aufwärmrunde
+            </div>
+          </div>
+          <div
+            class="bg-slate-950/80 rounded-lg py-1 px-2 border border-slate-800/80 flex flex-col items-center justify-center"
+          >
+            <div
+              class="text-[9px] text-slate-400 uppercase font-bold tracking-wider"
+            >
+              Bakis
+            </div>
+            <div
+              id="livesContainer"
+              class="flex items-center justify-center gap-1 mt-0.5 min-h-[22px]"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Ayran Boost Status Bar -->
+        <div
+          id="boostBarWrapper"
+          class="w-full bg-slate-950 border-x-2 border-slate-800 px-4 py-1 hidden"
+        >
+          <div
+            class="flex items-center justify-between text-[10px] font-pixel text-cyan-300 mb-1"
+          >
+            <span class="animate-pulse"
+              >⚡ AYRAN-POWER AKTIV! RAMME SIE WEG!</span
+            >
+            <span id="boostTimerText">7.0s</span>
+          </div>
+          <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+            <div
+              id="boostProgress"
+              class="h-full bg-gradient-to-r from-cyan-400 via-sky-500 to-blue-500 transition-all duration-75"
+              style="width: 100%"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Game Canvas Container -->
+        <div
+          id="canvasContainer"
+          class="relative w-full arcade-cabinet rounded-b-2xl overflow-hidden bg-slate-950 flex justify-center items-center"
+        >
+          <!-- Main Maze Canvas (19x21 tiles @ 28px = 532x588) -->
+          <canvas
+            id="gameCanvas"
+            width="532"
+            height="588"
+            tabindex="0"
+            class="w-full h-auto block cursor-pointer"
+          ></canvas>
+
+          <!-- Subtle CRT Scanline Overlay -->
+          <div class="crt-lines pointer-events-none absolute inset-0"></div>
+
+          <!-- Start / Pause / Game Over Overlay -->
+          <div
+            id="overlayScreen"
+            class="absolute inset-0 bg-slate-950/90 backdrop-blur-sm flex flex-col items-center justify-center p-5 text-center z-20"
+          >
+            <!-- Dynamic Showcase Sprite on Overlay -->
+            <div
+              class="flex items-center justify-center gap-4 mb-3 bg-slate-900/90 p-3 rounded-2xl border border-amber-500/30 shadow-lg"
+            >
+              <div class="flex flex-col items-center">
+                <canvas
+                  id="previewBakiFront"
+                  width="48"
+                  height="48"
+                  class="w-12 h-12"
+                ></canvas>
+                <span class="text-[9px] text-slate-300 mt-1">Baki (Vorne)</span>
+              </div>
+              <div class="flex flex-col items-center">
+                <canvas
+                  id="previewBakiBack"
+                  width="48"
+                  height="48"
+                  class="w-12 h-12"
+                ></canvas>
+                <span class="text-[9px] text-amber-400 mt-1 font-semibold"
+                  >Tenryu-Rücken</span
+                >
+              </div>
+              <div class="h-8 w-[1px] bg-slate-700 mx-1"></div>
+              <div class="flex flex-col items-center">
+                <canvas
+                  id="previewDoener"
+                  width="48"
+                  height="48"
+                  class="w-12 h-12"
+                ></canvas>
+                <span class="text-[9px] text-amber-300 mt-1">Döner (+10)</span>
+              </div>
+              <div class="flex flex-col items-center">
+                <canvas
+                  id="previewAyran"
+                  width="48"
+                  height="48"
+                  class="w-12 h-12"
+                ></canvas>
+                <span class="text-[9px] text-cyan-300 mt-1">Ayran-Boost</span>
+              </div>
+            </div>
+
+            <h2
+              id="overlayTitle"
+              class="font-pixel text-lg sm:text-2xl text-amber-400 mb-2 drop-shadow"
+            >
+              HUNGER AUF DÖNER?
+            </h2>
+            <p
+              id="overlaySubtitle"
+              class="text-xs sm:text-sm text-slate-300 max-w-md mb-5 leading-relaxed"
+            >
+              Steuere <strong class="text-amber-300">Baki</strong> in seiner
+              schwarz-goldenen
+              <strong class="text-amber-300">Tenryu-Drachenjacke</strong> durch
+              das Labyrinth! Sammle alle heißen Döner, trink
+              <strong class="text-cyan-300">Ayran</strong> für den Power-Boost
+              und weiche der
+              <strong class="text-rose-400">Anti-Döner-Fraktion</strong> aus!
+            </p>
+
+            <button
+              id="startBtn"
+              type="button"
+              class="btn-arcade font-pixel text-xs sm:text-sm text-slate-950 font-bold px-6 py-3.5 rounded-xl cursor-pointer"
+            >
+              ▶ JAGD STARTEN
+            </button>
+
+            <p class="mt-3 text-[11px] text-amber-300/90 font-medium">
+              Drücke einfach eine Richtungstaste (WASD / Pfeiltasten) oder
+              klicke auf Start!
+            </p>
+          </div>
+        </div>
+
+        <!-- On-Screen Arcade Controls (Always accessible for Touch & Preview Window Focus) -->
+        <div
+          class="w-full mt-3 bg-slate-900/90 border border-slate-800 rounded-2xl p-3 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg"
+        >
+          <div class="text-center sm:text-left">
+            <div
+              class="text-xs font-bold text-amber-400 flex items-center justify-center sm:justify-start gap-1.5"
+            >
+              <span>🕹️</span>
+              <span>Direktsteuerung (Tastatur & Klick/Touch)</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-0.5">
+              Nutze <strong class="text-slate-200">Pfeiltasten</strong>,
+              <strong class="text-slate-200">WASD</strong> oder das Steuerkreuz
+              rechts. Nächste Kurve kann vorab gedrückt werden!
+            </p>
+          </div>
+
+          <!-- Interactive D-Pad -->
+          <div class="grid grid-cols-3 gap-1.5 w-36 shrink-0">
+            <div></div>
+            <button
+              type="button"
+              data-dir="UP"
+              class="dpad-btn rounded-lg py-2 text-sm font-bold text-amber-400 flex items-center justify-center cursor-pointer"
+              title="Nach oben (W / Pfeil oben)"
+            >
+              ▲
+            </button>
+            <div></div>
+            <button
+              type="button"
+              data-dir="LEFT"
+              class="dpad-btn rounded-lg py-2 text-sm font-bold text-amber-400 flex items-center justify-center cursor-pointer"
+              title="Nach links (A / Pfeil links)"
+            >
+              ◀
+            </button>
+            <button
+              type="button"
+              data-dir="DOWN"
+              class="dpad-btn rounded-lg py-2 text-sm font-bold text-amber-400 flex items-center justify-center cursor-pointer"
+              title="Nach unten (S / Pfeil unten)"
+            >
+              ▼
+            </button>
+            <button
+              type="button"
+              data-dir="RIGHT"
+              class="dpad-btn rounded-lg py-2 text-sm font-bold text-amber-400 flex items-center justify-center cursor-pointer"
+              title="Nach rechts (D / Pfeil rechts)"
+            >
+              ▶
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Legend, Characters & Rules -->
+      <div class="w-full max-w-[540px] lg:w-80 flex flex-col gap-4">
+        <!-- Baki & Jacket Info Card -->
+        <div
+          class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl"
+        >
+          <div
+            class="flex items-center gap-2 mb-3 pb-2 border-b border-slate-800"
+          >
+            <span class="text-amber-400 text-lg">🐉</span>
+            <h3 class="font-pixel text-xs text-amber-400">DER HELD: BAKI</h3>
+          </div>
+          <div
+            class="flex items-center gap-3 bg-slate-950/70 p-2.5 rounded-xl border border-slate-800/80 mb-2.5"
+          >
+            <canvas
+              id="legendBakiFront"
+              width="44"
+              height="44"
+              class="w-11 h-11 shrink-0"
+            ></canvas>
+            <canvas
+              id="legendBakiBack"
+              width="44"
+              height="44"
+              class="w-11 h-11 shrink-0"
+            ></canvas>
+            <div class="text-xs text-slate-300 leading-snug">
+              <strong class="text-white">Sukajan „Tenryu“ Jacke:</strong>
+              Markanter Vollbart, Cap, weiße Ärmel & goldene Drachen-Stickerei
+              auf dem Rücken, wenn Baki nach
+              <span class="text-amber-400 font-semibold">oben</span> läuft!
+            </div>
+          </div>
+
+          <!-- Collectibles Mini Legend -->
+          <div class="grid grid-cols-2 gap-2">
+            <div
+              class="bg-slate-950/70 p-2 rounded-xl border border-slate-800/80 flex items-center gap-2"
+            >
+              <canvas
+                id="legendDoener"
+                width="32"
+                height="32"
+                class="w-8 h-8 shrink-0"
+              ></canvas>
+              <div>
+                <div class="text-xs font-bold text-amber-300">Döner</div>
+                <div class="text-[10px] text-slate-400">+10 Punkte</div>
+              </div>
+            </div>
+            <div
+              class="bg-slate-950/70 p-2 rounded-xl border border-slate-800/80 flex items-center gap-2"
+            >
+              <canvas
+                id="legendAyran"
+                width="32"
+                height="32"
+                class="w-8 h-8 shrink-0"
+              ></canvas>
+              <div>
+                <div class="text-xs font-bold text-cyan-300">Ayran-Becher</div>
+                <div class="text-[10px] text-slate-400">+50 & Boost</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- The Anti-Döner-Fraktion Card -->
+        <div
+          class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl"
+        >
+          <div
+            class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800"
+          >
+            <div class="flex items-center gap-2">
+              <span class="text-rose-500 text-lg">🚨</span>
+              <h3 class="font-pixel text-[11px] text-rose-400">
+                ANTI-DÖNER-FRAKTION
+              </h3>
+            </div>
+          </div>
+          <p class="text-[11px] text-slate-400 mb-3">
+            Diese vier Fitness- & Gemüse-Fanatiker wollen verhindern, dass Baki
+            seinen Döner genießt:
+          </p>
+
+          <div class="space-y-2.5">
+            <!-- Enemy 1: Brokkoli-Boss -->
+            <div
+              class="flex items-center gap-3 bg-slate-950/80 p-2 rounded-xl border border-emerald-900/50"
+            >
+              <canvas
+                id="legendEnemy0"
+                width="36"
+                height="36"
+                class="w-9 h-9 shrink-0"
+              ></canvas>
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-bold text-emerald-400 truncate">
+                  1. Brokkoli-Boss
+                </div>
+                <div class="text-[10px] text-slate-400">
+                  Aggressives Grünzeug auf direkter Verfolgungsjagd.
+                </div>
+              </div>
+            </div>
+
+            <!-- Enemy 2: Die Hantel -->
+            <div
+              class="flex items-center gap-3 bg-slate-950/80 p-2 rounded-xl border border-slate-700/60"
+            >
+              <canvas
+                id="legendEnemy1"
+                width="36"
+                height="36"
+                class="w-9 h-9 shrink-0"
+              ></canvas>
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-bold text-slate-300 truncate">
+                  2. Die Hantel
+                </div>
+                <div class="text-[10px] text-slate-400">
+                  Schweres Eisen – will Baki ins Fitnessstudio zwingen.
+                </div>
+              </div>
+            </div>
+
+            <!-- Enemy 3: Die Salat-Bowl -->
+            <div
+              class="flex items-center gap-3 bg-slate-950/80 p-2 rounded-xl border border-lime-900/50"
+            >
+              <canvas
+                id="legendEnemy2"
+                width="36"
+                height="36"
+                class="w-9 h-9 shrink-0"
+              ></canvas>
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-bold text-lime-400 truncate">
+                  3. Die Salat-Bowl
+                </div>
+                <div class="text-[10px] text-slate-400">
+                  Kalorienarme Schüssel ohne Soße und ohne Spaß.
+                </div>
+              </div>
+            </div>
+
+            <!-- Enemy 4: Die Kampfsport-Karotte -->
+            <div
+              class="flex items-center gap-3 bg-slate-950/80 p-2 rounded-xl border border-orange-900/50"
+            >
+              <canvas
+                id="legendEnemy3"
+                width="36"
+                height="36"
+                class="w-9 h-9 shrink-0"
+              ></canvas>
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-bold text-orange-400 truncate">
+                  4. Kampfsport-Karotte
+                </div>
+                <div class="text-[10px] text-slate-400">
+                  Trägt ein schwarzes Stirnband und teilt Vitamin-Kicks aus.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Tip Box -->
+        <div
+          class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3.5 text-xs text-amber-200/90 leading-relaxed"
+        >
+          <strong class="text-amber-400">💡 Butterweiche Steuerung:</strong>
+          Halte oder drücke die gewünschte Richtung schon <em>vor</em> einer
+          Abzweigung – Baki merkt sich deinen Wunsch und biegt an der nächsten
+          freien Ecke automatisch ab!
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /********************************************************************
+       * 1. RETRO WEB AUDIO SYNTHESIZER (No external audio files needed)
+       ********************************************************************/
+      class SoundEffects {
+        constructor() {
+          this.ctx = null;
+          this.muted = false;
+        }
+
+        init() {
+          if (!this.ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) this.ctx = new AudioCtx();
+          }
+          if (this.ctx && this.ctx.state === "suspended") {
+            this.ctx.resume();
+          }
+        }
+
+        toggleMute() {
+          this.muted = !this.muted;
+          return this.muted;
+        }
+
+        playTone(freq, type, duration, vol = 0.12, slideTo = null) {
+          if (this.muted) return;
+          this.init();
+          if (!this.ctx) return;
+
+          try {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+            if (slideTo) {
+              osc.frequency.exponentialRampToValueAtTime(
+                slideTo,
+                this.ctx.currentTime + duration,
+              );
+            }
+            gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(
+              0.001,
+              this.ctx.currentTime + duration,
+            );
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + duration);
+          } catch (e) {}
+        }
+
+        eatDoener(step) {
+          const f1 = step % 2 === 0 ? 300 : 360;
+          const f2 = step % 2 === 0 ? 440 : 260;
+          this.playTone(f1, "triangle", 0.07, 0.13, f2);
+        }
+
+        drinkAyran() {
+          const notes = [330, 440, 554, 659, 880];
+          notes.forEach((n, i) => {
+            setTimeout(() => this.playTone(n, "square", 0.12, 0.12), i * 55);
+          });
+        }
+
+        eatEnemy() {
+          this.playTone(220, "sawtooth", 0.12, 0.18, 720);
+          setTimeout(() => this.playTone(720, "square", 0.18, 0.16, 980), 90);
+        }
+
+        loseLife() {
+          const notes = [440, 392, 349, 311, 261, 196, 130];
+          notes.forEach((n, i) => {
+            setTimeout(
+              () => this.playTone(n, "sawtooth", 0.13, 0.15, n * 0.8),
+              i * 95,
+            );
+          });
+        }
+
+        levelUp() {
+          const notes = [262, 330, 392, 523, 392, 523, 659];
+          notes.forEach((n, i) => {
+            setTimeout(() => this.playTone(n, "square", 0.14, 0.14), i * 85);
+          });
+        }
+      }
+
+      const sfx = new SoundEffects();
+
+      /********************************************************************
+       * 2. PIXEL ART MATRICES (16x16 Crisp Pixel Sprites)
+       *    Updated with lighter, warm natural skin tone (#ffdbac / #e0ac69)
+       *    and distinct dark brown/black full beard (#2b1d0e).
+       ********************************************************************/
+      const PALETTE = {
+        ".": null,
+        K: "#090d16", // Deep Black / Outline
+        J: "#18181b", // Jacket Satin Black
+        D: "#27272a", // Dark Grey Cap Crown
+        V: "#2b1d0e", // Rich Dark Brown/Black Full Beard & Mustache
+        W: "#f8fafc", // Crisp White (Sukajan sleeves, Ayran cup, Eyes)
+        S: "#cbd5e1", // Silver / Light Grey Shading
+        G: "#fbbf24", // Gold (Sukajan Dragon Embroidery & Trim)
+        T: "#ffdbac", // Lighter Warm Natural / Mediterranean Skin Tone
+        U: "#e0ac69", // Warm Skin Shading / Nose Contour
+        B: "#f59e0b", // Golden Flatbread (Döner)
+        Q: "#b45309", // Toasted Flatbread Crust Shadow
+        M: "#78350f", // Roasted Döner Meat Brown
+        N: "#451a03", // Dark Meat Crust
+        R: "#ef4444", // Bright Red (Tomato, Dragon accent, Bowl)
+        L: "#22c55e", // Bright Green (Lettuce, Broccoli, Carrot top)
+        E: "#15803d", // Dark Forest Green (Broccoli stalk)
+        A: "#38bdf8", // Ayran Label Cyan / Dragon Turquoise
+        Z: "#1d4ed8", // Frightened Blue Ghost Body
+        O: "#f97316", // Bright Carrot Orange
+        P: "#ea580c", // Carrot Deep Orange Shade
+      };
+
+      const SPRITES = {
+        // BAKI FRONT / DOWN: Broad shoulders, black/gold cap, warm light skin ('T'), dark full beard ('V'), Sukajan jacket (black chest, gold zipper/trim, white sleeves)
+        BAKI_DOWN: [
+          "....KKKKKKKK....",
+          "...KDDDDDDDDK...",
+          "..KDDDDGGDDDDK..",
+          "..KKKKKKKKKKKK..",
+          ".KTTTTTTTTTTTTK.",
+          ".KTKKTTTTTTKKTK.",
+          ".KTTWKTTTTKWTTK.",
+          ".KTTTTTUUUTTTTK.",
+          ".KTTVVVVVVVVTTK.",
+          "..KVVVVTTVVVVK..",
+          ".KWWKJJGGJJKKWWK",
+          "KWWWKJJGGJJKWWWK",
+          "KWWWKJGGGGJKWWWK",
+          "KWWKKJJGGJJKKWWK",
+          ".KTTKJJKKJJKTTK.",
+          "..KK.KK..KK.KK..",
+        ],
+
+        // BAKI UP (BACK VIEW): Back of cap, warm light neck ('T') + Sukajan Jacket with Golden/Turquoise/Red TENRYU DRAGON Embroidery!
+        BAKI_UP: [
+          "....KKKKKKKK....",
+          "...KDDDDDDDDK...",
+          "..KDDDDDDDDDDK..",
+          "..KKKKGGGGKKKK..",
+          "..KTTTTTTTTTTK..",
+          "..KKKKKKKKKKKK..",
+          ".KWWKJJGGRJJKWWK",
+          "KWWWKJGAAAGJKWWW",
+          "KWWWKJGGGGGJKWWW",
+          "KWWWKJJAAGJJKWWW",
+          "KWWWKJGGGGRJKWWW",
+          "KWWWKJJGGGJJKWWW",
+          "KWWKKGGGGGGGGKKW",
+          ".KTTKJJKKKKJJKTK",
+          "..KK.KK....KK.KK",
+          "................",
+        ],
+
+        // BAKI RIGHT: Cap visor pointing right, warm light skin ('T'), distinct dark full beard ('V'), white Sukajan sleeve with gold stripe
+        BAKI_RIGHT: [
+          "....KKKKKKKK....",
+          "...KDDDDDDDDK...",
+          "..KDDDDDDDDDDKKK",
+          "..KKKKKKKKKKKKKK",
+          "..KTTTTTTTTTK...",
+          "..KTTTTTTTKKTK..",
+          "..KTTTTTTTWKTK..",
+          "..KTTTTTTTUUTUK.",
+          "..KTTTVVVVVVVVK.",
+          "...KKVVVVVVVVKK.",
+          "..KJJWWWWKJJGK..",
+          ".KJJWWGGWWKJJGK.",
+          ".KJJWWWWWWKJJGK.",
+          "..KJJWTTWWKJJGK.",
+          "...KJJKKKKJJK...",
+          "...KKK....KKK...",
+        ],
+
+        // DÖNER KEBAB: Golden triangular flatbread pocket, meat, green lettuce, red tomato, white garlic sauce
+        DOENER: [
+          "................",
+          ".....KKKKKK.....",
+          "...KKLWWLWRKK...",
+          "..KLWWRRLLWWLK..",
+          ".KLLMMWWMMRRLLK.",
+          ".KMMNNMMMMNNMMK.",
+          ".KBBBBBBBBBBBBK.",
+          "..KBBBBQBBBBBK..",
+          "..KBBBQQQBBBBK..",
+          "...KBBBBBBBBK...",
+          "...KBBBQQBBBK...",
+          "....KBBBBBBK....",
+          "....KBBQBBBK....",
+          ".....KBBBBK.....",
+          "......KKKK......",
+          "................",
+        ],
+
+        // AYRAN CUP: Frothy white yogurt cup with straw & blue/red classic logo
+        AYRAN: [
+          ".........KKK....",
+          "........KRRK....",
+          "........KRRK....",
+          "..KKKKKKKKKKKK..",
+          ".KWWWWWWWWWWWWK.",
+          "..KKKKKKKKKKKK..",
+          "..KWWWWWWWWWWK..",
+          "..KWWAAAAAAGGK..",
+          "..KWWAAWWWAWWK..",
+          "..KWWAAAAAAGGK..",
+          "...KWWWWWWWWK...",
+          "...KWWWRRWWWK...",
+          "...KWWWWWWWWK...",
+          "....KWWWWWWK....",
+          "....KKKKKKKK....",
+          "................",
+        ],
+
+        // ENEMY 0: BROKKOLI-BOSS
+        ENEMY_BROKKOLI: [
+          "....KKKKKKKK....",
+          "..KKLLLLLLLLKK..",
+          ".KLLLLLLLLLLLLK.",
+          "KLLLLKLLLLKLLLLK",
+          "KLLLEKKLLKKELLLK",
+          "KLLLWKKEEKWLLLLK",
+          "KLLLWKKEEKWLLLLK",
+          ".KLLLLLLLLLLLLK.",
+          "..KKKLLLLLLKKK..",
+          "....KEEEEEEK....",
+          "....KEKWWKEK....",
+          "....KEEEEEEK....",
+          ".....KEEEEK.....",
+          ".....KE..EK.....",
+          "....KKK..KKK....",
+          "................",
+        ],
+
+        // ENEMY 1: DIE HANTEL
+        ENEMY_HANTEL: [
+          "................",
+          ".KKKK......KKKK.",
+          "KDDDDK....KDDDDK",
+          "KDSDDKKKKKKDDSDK",
+          "KDSDDDDDDDDDDSDK",
+          "KDSDDKWWWWKDDSDK",
+          "KDSDDKWKKWKDDSDK",
+          "KDSDDKWWWWKDDSDK",
+          "KDSDDKKKKKKDDSDK",
+          "KDSDDDDDDDDDDSDK",
+          "KDDDDK....KDDDDK",
+          ".KKKK......KKKK.",
+          "................",
+          "................",
+          "................",
+          "................",
+        ],
+
+        // ENEMY 2: DIE SALAT-BOWL
+        ENEMY_SALAT: [
+          "....KKK..KKK....",
+          "..KKLLLRRLLLKK..",
+          ".KLLLLRRRRLLLLK.",
+          ".KLLWWLLLLWWLLK.",
+          "KLLLEELLLLLEELLK",
+          "KKKKKKKKKKKKKKKK",
+          "KRRRRRRRRRRRRRRK",
+          "KRRKWWWWWWWWKRRK",
+          ".KRKWKKWWKKWKRK.",
+          ".KRRKWWWWWWKRRK.",
+          "..KRRRRRRRRRRK..",
+          "..KRRWWWWWWWRK..",
+          "...KRRRRRRRRK...",
+          "....KKKKKKKK....",
+          "................",
+          "................",
+        ],
+
+        // ENEMY 3: DIE KAMPFSPORT-KAROTTE
+        ENEMY_KAROTTE: [
+          ".....KK..KK.....",
+          "....KLLKKLLK....",
+          "....KLLLLLLK....",
+          ".....KKKKKK.....",
+          "...KKOOOOOOKK...",
+          "..KKKKKKKKKKKKK.",
+          "..KDDDDDDDDDDKKK",
+          "..KKKKKKKKKKKK..",
+          "..KOOWKKOOKWOK..",
+          "...KOWKKOOKWOK..",
+          "...KOOOOOOOOOK..",
+          "....KOOPPPPOOK..",
+          "....KOOOOOOOK...",
+          ".....KOOPPOK....",
+          "......KOOOK.....",
+          ".......KKK......",
+        ],
+
+        // FRIGHTENED ENEMY (Panicked Blue during Ayran Boost)
+        ENEMY_SCARED: [
+          "....KKKKKKKK....",
+          "..KKZZZZZZZZKK..",
+          ".KZZZZZZZZZZZZK.",
+          "KZZZZZZZZZZZZZZK",
+          "KZZZWWZZZZWWZZZK",
+          "KZZZWWZZZZWWZZZK",
+          "KZZZZZZZZZZZZZZK",
+          "KZZZZZZZZZZZZZZK",
+          "KZZWWZZWWZZWWZZK",
+          "KZWZZWWZZWWZZWZK",
+          "KZZZZZZZZZZZZZZK",
+          "KZZZZZZZZZZZZZZK",
+          "KZZKZZKZZKZZKZZK",
+          "KKK.KK.KK.KK.KKK",
+          "................",
+          "................",
+        ],
+      };
+
+      const spriteCache = {};
+
+      function createOffscreenSprite(matrix, mirrorX = false) {
+        const c = document.createElement("canvas");
+        c.width = 16;
+        c.height = 16;
+        const cx = c.getContext("2d");
+
+        for (let r = 0; r < 16; r++) {
+          const rowStr = matrix[r] || "................";
+          for (let col = 0; col < 16; col++) {
+            const ch = rowStr[col];
+            const color = PALETTE[ch];
+            if (color) {
+              cx.fillStyle = color;
+              const drawCol = mirrorX ? 15 - col : col;
+              cx.fillRect(drawCol, r, 1, 1);
+            }
+          }
+        }
+        return c;
+      }
+
+      function initSprites() {
+        spriteCache.BAKI_DOWN = createOffscreenSprite(SPRITES.BAKI_DOWN);
+        spriteCache.BAKI_UP = createOffscreenSprite(SPRITES.BAKI_UP);
+        spriteCache.BAKI_RIGHT = createOffscreenSprite(SPRITES.BAKI_RIGHT);
+        spriteCache.BAKI_LEFT = createOffscreenSprite(SPRITES.BAKI_RIGHT, true);
+        spriteCache.DOENER = createOffscreenSprite(SPRITES.DOENER);
+        spriteCache.AYRAN = createOffscreenSprite(SPRITES.AYRAN);
+        spriteCache.ENEMY_0 = createOffscreenSprite(SPRITES.ENEMY_BROKKOLI);
+        spriteCache.ENEMY_1 = createOffscreenSprite(SPRITES.ENEMY_HANTEL);
+        spriteCache.ENEMY_2 = createOffscreenSprite(SPRITES.ENEMY_SALAT);
+        spriteCache.ENEMY_3 = createOffscreenSprite(SPRITES.ENEMY_KAROTTE);
+        spriteCache.ENEMY_SCARED = createOffscreenSprite(SPRITES.ENEMY_SCARED);
+      }
+
+      function renderPreviewCanvas(canvasId, spriteKey) {
+        const el = document.getElementById(canvasId);
+        if (!el || !spriteCache[spriteKey]) return;
+        const cx = el.getContext("2d");
+        cx.imageSmoothingEnabled = false;
+        cx.clearRect(0, 0, el.width, el.height);
+        cx.drawImage(spriteCache[spriteKey], 0, 0, el.width, el.height);
+      }
+
+      /********************************************************************
+       * 3. MAZE DEFINITION & GAME STATE
+       ********************************************************************/
+      const TILE_SIZE = 28;
+      const COLS = 19;
+      const ROWS = 21;
+
+      // 1 = Wall, 2 = Döner, 3 = Ayran Power-Up (4 corners), 4 = Ghost House Door, 0 = Empty Floor
+      const BASE_MAZE = [
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 3, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 3, 1],
+        [1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1],
+        [1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1],
+        [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+        [1, 2, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1],
+        [1, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 1],
+        [1, 1, 1, 1, 2, 1, 1, 1, 0, 1, 0, 1, 1, 1, 2, 1, 1, 1, 1],
+        [0, 0, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0],
+        [1, 1, 1, 1, 2, 1, 0, 1, 1, 4, 1, 1, 0, 1, 2, 1, 1, 1, 1],
+        [0, 0, 0, 0, 2, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2, 0, 0, 0, 0],
+        [1, 1, 1, 1, 2, 1, 0, 1, 1, 1, 1, 1, 0, 1, 2, 1, 1, 1, 1],
+        [0, 0, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0],
+        [1, 1, 1, 1, 2, 1, 0, 1, 1, 1, 1, 1, 0, 1, 2, 1, 1, 1, 1],
+        [1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+        [1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1],
+        [1, 2, 2, 1, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 1, 2, 2, 1],
+        [1, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1],
+        [1, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 1],
+        [1, 3, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 3, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      ];
+
+      const DIRS = {
+        UP: { x: 0, y: -1, name: "UP" },
+        DOWN: { x: 0, y: 1, name: "DOWN" },
+        LEFT: { x: -1, y: 0, name: "LEFT" },
+        RIGHT: { x: 1, y: 0, name: "RIGHT" },
+        NONE: { x: 0, y: 0, name: "NONE" },
+      };
+
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
+      ctx.imageSmoothingEnabled = false;
+
+      let maze = [];
+      let remainingDoeners = 0;
+      let score = 0;
+      let highScore = parseInt(
+        localStorage.getItem("bakiDoenerHighscore") || "0",
+        10,
+      );
+      let level = 1;
+      let lives = 3;
+      let gameState = "START"; // START, PLAYING, PAUSED, LEVEL_CLEAR, LIFE_LOST, GAMEOVER
+      let ayranTimer = 0;
+      let ayranMaxDuration = 510; // 8.5s in Level 1 (at 60fps)
+      let ayranCombo = 0;
+      let chompStep = 0;
+      let animTick = 0;
+      let levelBannerTimer = 0;
+      let floatingTexts = [];
+
+      // Progressive Level Difficulty Helper
+      function getLevelConfig(lvl) {
+        const ranks = [
+          "Aufwärmrunde", // Level 1
+          "Diät-Alarm", // Level 2
+          "Fitness-Wahn", // Level 3
+          "Endstufe Scharf", // Level 4
+          "Mit Alles & Scharf", // Level 5
+          "Döner-Meister", // Level 6+
+        ];
+        const rankTitle = ranks[Math.min(lvl - 1, ranks.length - 1)];
+
+        // Baki moves at a crisp 2.35 px/frame in Level 1, gently scaling up to 2.55 max
+        const bakiSpeed = Math.min(2.55, 2.35 + (lvl - 1) * 0.04);
+
+        // Enemy base speed: 1.22 in Level 1, +0.12 per level, capped at 2.15 so Baki always has an edge
+        const enemyBaseSpeed = Math.min(
+          2.15,
+          Math.min(bakiSpeed - 0.25, 1.22 + (lvl - 1) * 0.12),
+        );
+
+        // AI tracking accuracy: 35% smart turns in Level 1 -> +10% per level up to 85%
+        const baseTracking = Math.min(0.85, 0.35 + (lvl - 1) * 0.1);
+
+        // Ayran boost duration: 8.5s (510 frames) in Level 1, -0.6s (36 frames) per level, min 4.0s (240 frames)
+        const boostFrames = Math.max(240, 510 - (lvl - 1) * 36);
+
+        // Frightened speed: 0.85 px/frame in Level 1, scaling slightly in higher levels
+        const scaredSpeed = Math.min(1.2, 0.85 + (lvl - 1) * 0.05);
+
+        // Staggered Ghost House release delays: 0s, 3.5s (210f), 7.0s (420f), 10.5s (630f) in Level 1
+        const releaseScale = Math.max(0.3, 1 - (lvl - 1) * 0.14);
+
+        return {
+          rankTitle,
+          bakiSpeed,
+          enemyBaseSpeed,
+          baseTracking,
+          boostFrames,
+          scaredSpeed,
+          releaseScale,
+        };
+      }
+
+      // Baki Entity
+      const baki = {
+        x: 9 * TILE_SIZE + TILE_SIZE / 2,
+        y: 16 * TILE_SIZE + TILE_SIZE / 2,
+        dir: DIRS.NONE,
+        nextDir: DIRS.NONE,
+        facing: "DOWN",
+        speed: 2.35,
+      };
+
+      // 4 Anti-Döner Enemies
+      let enemies = [];
+
+      function resetMaze() {
+        maze = BASE_MAZE.map((row) => [...row]);
+        remainingDoeners = 0;
+        for (let r = 0; r < ROWS; r++) {
+          for (let c = 0; c < COLS; c++) {
+            if (maze[r][c] === 2 || maze[r][c] === 3) {
+              remainingDoeners++;
+            }
+          }
+        }
+      }
+
+      function resetPositions() {
+        const cfg = getLevelConfig(level);
+
+        baki.x = 9 * TILE_SIZE + TILE_SIZE / 2;
+        baki.y = 16 * TILE_SIZE + TILE_SIZE / 2;
+        baki.dir = DIRS.NONE;
+        baki.nextDir = DIRS.NONE;
+        baki.facing = "DOWN";
+        baki.speed = cfg.bakiSpeed;
+        ayranMaxDuration = cfg.boostFrames;
+
+        // Level 1 speeds span 1.10 to 1.25 px/frame, scaling smoothly by +0.12 per level
+        enemies = [
+          {
+            id: 0,
+            name: "Brokkoli-Boss",
+            sprite: "ENEMY_0",
+            x: 9 * TILE_SIZE + TILE_SIZE / 2,
+            y: 8 * TILE_SIZE + TILE_SIZE / 2,
+            dir: DIRS.LEFT,
+            speed: cfg.enemyBaseSpeed, // 1.22 in Level 1
+            trackingChance: Math.min(0.9, cfg.baseTracking + 0.05),
+            inHouse: false,
+            releaseDelay: 0, // 0s
+            lastDecisionTile: "",
+          },
+          {
+            id: 1,
+            name: "Die Hantel",
+            sprite: "ENEMY_1",
+            x: 9 * TILE_SIZE + TILE_SIZE / 2,
+            y: 10 * TILE_SIZE + TILE_SIZE / 2,
+            dir: DIRS.UP,
+            speed: cfg.enemyBaseSpeed * 0.95, // ~1.16 in Level 1
+            trackingChance: cfg.baseTracking,
+            inHouse: true,
+            releaseDelay: Math.round(210 * cfg.releaseScale), // 3.5s in Level 1
+            lastDecisionTile: "",
+          },
+          {
+            id: 2,
+            name: "Die Salat-Bowl",
+            sprite: "ENEMY_2",
+            x: 8 * TILE_SIZE + TILE_SIZE / 2,
+            y: 10 * TILE_SIZE + TILE_SIZE / 2,
+            dir: DIRS.UP,
+            speed: cfg.enemyBaseSpeed * 0.9, // ~1.10 in Level 1
+            trackingChance: Math.max(0.25, cfg.baseTracking - 0.05),
+            inHouse: true,
+            releaseDelay: Math.round(420 * cfg.releaseScale), // 7.0s in Level 1
+            lastDecisionTile: "",
+          },
+          {
+            id: 3,
+            name: "Kampfsport-Karotte",
+            sprite: "ENEMY_3",
+            x: 10 * TILE_SIZE + TILE_SIZE / 2,
+            y: 10 * TILE_SIZE + TILE_SIZE / 2,
+            dir: DIRS.UP,
+            speed: Math.min(cfg.bakiSpeed - 0.22, cfg.enemyBaseSpeed * 1.025), // ~1.25 in Level 1
+            trackingChance: Math.min(0.88, cfg.baseTracking + 0.03),
+            inHouse: true,
+            releaseDelay: Math.round(630 * cfg.releaseScale), // 10.5s in Level 1
+            lastDecisionTile: "",
+          },
+        ];
+      }
+
+      function updateHUD() {
+        const cfg = getLevelConfig(level);
+        document.getElementById("scoreEl").textContent = score;
+        if (score > highScore) {
+          highScore = score;
+          localStorage.setItem("bakiDoenerHighscore", highScore.toString());
+        }
+        document.getElementById("highScoreEl").textContent = highScore;
+        document.getElementById("levelEl").textContent = level;
+        const rankEl = document.getElementById("levelRankEl");
+        if (rankEl) rankEl.textContent = cfg.rankTitle;
+
+        // Render 3 Mini Baki Heads (with lighter Mediterranean skin tone) as Lives
+        const livesContainer = document.getElementById("livesContainer");
+        livesContainer.innerHTML = "";
+        for (let i = 0; i < lives; i++) {
+          const lifeCanvas = document.createElement("canvas");
+          lifeCanvas.width = 22;
+          lifeCanvas.height = 22;
+          lifeCanvas.className = "w-5 h-5";
+          const lctx = lifeCanvas.getContext("2d");
+          lctx.imageSmoothingEnabled = false;
+          lctx.drawImage(spriteCache.BAKI_DOWN, 0, 0, 22, 22);
+          livesContainer.appendChild(lifeCanvas);
+        }
+      }
+
+      function addFloatingText(text, x, y, color = "#fbbf24") {
+        floatingTexts.push({
+          text,
+          x,
+          y,
+          color,
+          vy: -1.1,
+          life: 45,
+        });
+      }
+
+      /********************************************************************
+       * 4. BUTTER-SMOOTH PAC-MAN MOVEMENT & COLLISION ENGINE
+       *    - Instant 180-degree reversal anywhere
+       *    - Generous corner turn tolerance (Corner Pre-Turning / Snap)
+       *    - Exact grid-center alignment without getting stuck on edges
+       ********************************************************************/
+      function wrapCol(col) {
+        if (col < 0) return COLS - 1;
+        if (col >= COLS) return 0;
+        return col;
+      }
+
+      function isWallForBaki(col, row) {
+        if (row < 0 || row >= ROWS) return true;
+        // Row 10 is the wrap-around tunnel
+        if (col < 0 || col >= COLS) {
+          return row !== 10;
+        }
+        const tile = maze[row][col];
+        return tile === 1 || tile === 4;
+      }
+
+      function isWallForEnemy(col, row, inHouse) {
+        if (row < 0 || row >= ROWS) return true;
+        if (col < 0 || col >= COLS) {
+          return row !== 10;
+        }
+        const tile = maze[row][col];
+        if (tile === 1) return true;
+        if (tile === 4 && !inHouse) return true;
+        return false;
+      }
+
+      function moveBaki() {
+        const halfTile = TILE_SIZE / 2;
+        const centerCol = Math.floor(baki.x / TILE_SIZE);
+        const centerRow = Math.floor(baki.y / TILE_SIZE);
+        const tileCenterX = centerCol * TILE_SIZE + halfTile;
+        const tileCenterY = centerRow * TILE_SIZE + halfTile;
+
+        // 1. Handle buffered direction input (baki.nextDir)
+        if (baki.nextDir !== DIRS.NONE) {
+          // Case A: Standing still -> start immediately if tile in nextDir is free
+          if (baki.dir === DIRS.NONE) {
+            if (
+              !isWallForBaki(
+                centerCol + baki.nextDir.x,
+                centerRow + baki.nextDir.y,
+              )
+            ) {
+              baki.dir = baki.nextDir;
+              baki.facing = baki.dir.name;
+            }
+          }
+          // Case B: 180-degree opposite reversal -> ALWAYS execute immediately, even between tiles!
+          else if (
+            baki.dir.x === -baki.nextDir.x &&
+            baki.dir.y === -baki.nextDir.y
+          ) {
+            baki.dir = baki.nextDir;
+            baki.facing = baki.dir.name;
+          }
+          // Case C: 90-degree corner turn -> check within generous tolerance zone around tile center
+          else if (baki.dir !== baki.nextDir) {
+            const distToCenter = Math.hypot(
+              baki.x - tileCenterX,
+              baki.y - tileCenterY,
+            );
+            // 9px tolerance ensures Baki never misses a turn even at higher speeds
+            if (distToCenter <= 9.5) {
+              const turnCol = centerCol + baki.nextDir.x;
+              const turnRow = centerRow + baki.nextDir.y;
+              if (!isWallForBaki(turnCol, turnRow)) {
+                baki.x = tileCenterX;
+                baki.y = tileCenterY;
+                baki.dir = baki.nextDir;
+                baki.facing = baki.dir.name;
+              }
+            }
+          }
+        }
+
+        // 2. Move along current direction & keep centered in the lane
+        if (baki.dir !== DIRS.NONE) {
+          // Gently lock perpendicular axis to the tile center so Baki never scrapes walls
+          if (baki.dir.x !== 0) {
+            baki.y = tileCenterY;
+          } else if (baki.dir.y !== 0) {
+            baki.x = tileCenterX;
+          }
+
+          const nextX = baki.x + baki.dir.x * baki.speed;
+          const nextY = baki.y + baki.dir.y * baki.speed;
+
+          // Check if we are moving past the center of the current tile toward a wall
+          const movingPastCenterX =
+            (baki.dir.x > 0 && nextX > tileCenterX) ||
+            (baki.dir.x < 0 && nextX < tileCenterX);
+          const movingPastCenterY =
+            (baki.dir.y > 0 && nextY > tileCenterY) ||
+            (baki.dir.y < 0 && nextY < tileCenterY);
+
+          if (
+            (movingPastCenterX || movingPastCenterY) &&
+            isWallForBaki(centerCol + baki.dir.x, centerRow + baki.dir.y)
+          ) {
+            // Stop cleanly at the exact tile center
+            baki.x = tileCenterX;
+            baki.y = tileCenterY;
+          } else {
+            baki.x = nextX;
+            baki.y = nextY;
+            baki.facing = baki.dir.name;
+          }
+        }
+
+        // 3. Horizontal Tunnel Wrap-Around
+        if (baki.x < -halfTile + 2) {
+          baki.x = COLS * TILE_SIZE - halfTile - 2;
+        } else if (baki.x > COLS * TILE_SIZE + halfTile - 2) {
+          baki.x = -halfTile + 2;
+        }
+
+        // 4. Collectible Collision (Döner & Ayran)
+        const currCol = wrapCol(Math.floor(baki.x / TILE_SIZE));
+        const currRow = Math.floor(baki.y / TILE_SIZE);
+        if (currRow >= 0 && currRow < ROWS && currCol >= 0 && currCol < COLS) {
+          const item = maze[currRow][currCol];
+          if (item === 2) {
+            maze[currRow][currCol] = 0;
+            score += 10;
+            remainingDoeners--;
+            chompStep++;
+            sfx.eatDoener(chompStep);
+            updateHUD();
+          } else if (item === 3) {
+            maze[currRow][currCol] = 0;
+            score += 50;
+            remainingDoeners--;
+            ayranMaxDuration = getLevelConfig(level).boostFrames;
+            ayranTimer = ayranMaxDuration;
+            ayranCombo = 0;
+            sfx.drinkAyran();
+            addFloatingText("AYRAN-BOOST!", baki.x, baki.y - 10, "#38bdf8");
+            updateHUD();
+          }
+
+          if (remainingDoeners <= 0) {
+            handleLevelComplete();
+          }
+        }
+      }
+
+      function moveEnemies() {
+        const halfTile = TILE_SIZE / 2;
+        const cfg = getLevelConfig(level);
+
+        enemies.forEach((en) => {
+          if (en.releaseDelay > 0) {
+            en.releaseDelay--;
+            return;
+          }
+
+          // Smoothly exit the Ghost House in the center (to row 8, col 9)
+          if (en.inHouse) {
+            const targetX = 9 * TILE_SIZE + halfTile;
+            const targetY = 8 * TILE_SIZE + halfTile;
+            if (Math.abs(en.x - targetX) > 1.5) {
+              en.x += Math.sign(targetX - en.x) * 1.15;
+            } else {
+              en.x = targetX;
+              en.y -= 1.15;
+              if (en.y <= targetY) {
+                en.y = targetY;
+                en.inHouse = false;
+                en.dir = en.id % 2 === 0 ? DIRS.LEFT : DIRS.RIGHT;
+                en.lastDecisionTile = "9,8";
+              }
+            }
+            return;
+          }
+
+          // During Ayran boost, enemies slow down (0.85 px/frame in Level 1, scaling slightly)
+          const currentSpeed = ayranTimer > 0 ? cfg.scaredSpeed : en.speed;
+          const col = Math.floor(en.x / TILE_SIZE);
+          const row = Math.floor(en.y / TILE_SIZE);
+          const centerX = col * TILE_SIZE + halfTile;
+          const centerY = row * TILE_SIZE + halfTile;
+          const tileKey = `${col},${row}`;
+
+          // Make direction decision once per tile when reaching its center
+          const distToCenter = Math.hypot(en.x - centerX, en.y - centerY);
+          if (
+            distToCenter <= currentSpeed + 0.8 &&
+            en.lastDecisionTile !== tileKey &&
+            col >= 0 &&
+            col < COLS
+          ) {
+            en.x = centerX;
+            en.y = centerY;
+            en.lastDecisionTile = tileKey;
+
+            const possibleDirs = [
+              DIRS.UP,
+              DIRS.DOWN,
+              DIRS.LEFT,
+              DIRS.RIGHT,
+            ].filter((d) => {
+              if (d.x === -en.dir.x && d.y === -en.dir.y) return false;
+              return !isWallForEnemy(col + d.x, row + d.y, false);
+            });
+
+            if (possibleDirs.length === 0) {
+              en.dir = { x: -en.dir.x, y: -en.dir.y, name: en.dir.name };
+            } else if (possibleDirs.length === 1) {
+              en.dir = possibleDirs[0];
+            } else {
+              if (ayranTimer > 0) {
+                // Frightened: flee away from Baki
+                possibleDirs.sort((a, b) => {
+                  const da = Math.hypot(
+                    (col + a.x) * TILE_SIZE - baki.x,
+                    (row + a.y) * TILE_SIZE - baki.y,
+                  );
+                  const db = Math.hypot(
+                    (col + b.x) * TILE_SIZE - baki.x,
+                    (row + b.y) * TILE_SIZE - baki.y,
+                  );
+                  return db - da;
+                });
+                en.dir =
+                  Math.random() < 0.78
+                    ? possibleDirs[0]
+                    : possibleDirs[
+                        Math.floor(Math.random() * possibleDirs.length)
+                      ];
+              } else {
+                // Progressive AI tracking: ~35% smart tracking in Level 1 (+10% per level up to 85%+)
+                if (Math.random() < en.trackingChance) {
+                  possibleDirs.sort((a, b) => {
+                    const da = Math.hypot(
+                      (col + a.x) * TILE_SIZE - baki.x,
+                      (row + a.y) * TILE_SIZE - baki.y,
+                    );
+                    const db = Math.hypot(
+                      (col + b.x) * TILE_SIZE - baki.x,
+                      (row + b.y) * TILE_SIZE - baki.y,
+                    );
+                    return da - db;
+                  });
+                  en.dir = possibleDirs[0];
+                } else {
+                  en.dir =
+                    possibleDirs[
+                      Math.floor(Math.random() * possibleDirs.length)
+                    ];
+                }
+              }
+            }
+          }
+
+          // Keep aligned on track
+          if (en.dir.x !== 0) en.y = centerY;
+          if (en.dir.y !== 0) en.x = centerX;
+
+          en.x += en.dir.x * currentSpeed;
+          en.y += en.dir.y * currentSpeed;
+
+          // Horizontal Tunnel Wrap
+          if (en.x < -halfTile + 2) {
+            en.x = COLS * TILE_SIZE - halfTile - 2;
+            en.lastDecisionTile = "";
+          } else if (en.x > COLS * TILE_SIZE + halfTile - 2) {
+            en.x = -halfTile + 2;
+            en.lastDecisionTile = "";
+          }
+
+          // Check Collision with Baki
+          const dBaki = Math.hypot(en.x - baki.x, en.y - baki.y);
+          if (dBaki < TILE_SIZE * 0.68) {
+            if (ayranTimer > 0) {
+              ayranCombo++;
+              const pts = 200 * Math.pow(2, Math.min(3, ayranCombo - 1));
+              score += pts;
+              sfx.eatEnemy();
+              addFloatingText(`+${pts}`, en.x, en.y, "#38bdf8");
+              updateHUD();
+
+              // Send defeated enemy back to center house
+              en.x = 9 * TILE_SIZE + halfTile;
+              en.y = 10 * TILE_SIZE + halfTile;
+              en.inHouse = true;
+              en.releaseDelay = 110;
+              en.lastDecisionTile = "";
+            } else {
+              handleLoseLife(en.name);
+            }
+          }
+        });
+      }
+
+      function handleLoseLife(enemyName) {
+        lives--;
+        sfx.loseLife();
+        ayranTimer = 0;
+        updateHUD();
+
+        if (lives <= 0) {
+          gameState = "GAMEOVER";
+          const cfg = getLevelConfig(level);
+          showOverlay(
+            "GAME OVER!",
+            `Oh nein! <strong class="text-rose-400">${enemyName}</strong> hat Baki erwischt und ihm den Appetit verdorben!<br><br>Dein Endstand: <strong class="text-amber-400">${score} Punkte</strong> (Level ${level} – ${cfg.rankTitle})`,
+            "🔄 NOCHMAL VERSUCHEN",
+          );
+        } else {
+          gameState = "LIFE_LOST";
+          addFloatingText(
+            `AUTSCH! ${enemyName}!`,
+            baki.x,
+            baki.y - 12,
+            "#ef4444",
+          );
+          setTimeout(() => {
+            if (gameState === "LIFE_LOST") {
+              resetPositions();
+              gameState = "PLAYING";
+            }
+          }, 1200);
+        }
+      }
+
+      function handleLevelComplete() {
+        gameState = "LEVEL_CLEAR";
+        sfx.levelUp();
+        ayranTimer = 0;
+        addFloatingText(
+          "ALLE DÖNER VERPUTZT!",
+          canvas.width / 2,
+          canvas.height / 2,
+          "#fbbf24",
+        );
+
+        setTimeout(() => {
+          level++;
+          resetMaze();
+          resetPositions();
+          updateHUD();
+          levelBannerTimer = 150; // Show new level & difficulty banner for 2.5 seconds
+          gameState = "PLAYING";
+        }, 1800);
+      }
+
+      /********************************************************************
+       * 5. RENDERING ENGINE
+       ********************************************************************/
+      function drawMaze() {
+        ctx.fillStyle = "#090d16";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        for (let r = 0; r < ROWS; r++) {
+          for (let c = 0; c < COLS; c++) {
+            const tile = maze[r][c];
+            const x = c * TILE_SIZE;
+            const y = r * TILE_SIZE;
+
+            if (tile === 1) {
+              ctx.fillStyle = "#1e293b";
+              ctx.fillRect(x + 1, y + 1, TILE_SIZE - 2, TILE_SIZE - 2);
+              ctx.strokeStyle = "#d97706";
+              ctx.lineWidth = 1.5;
+              ctx.strokeRect(x + 2.5, y + 2.5, TILE_SIZE - 5, TILE_SIZE - 5);
+            } else if (tile === 4) {
+              ctx.fillStyle = "#f43f5e";
+              ctx.fillRect(x, y + TILE_SIZE / 2 - 3, TILE_SIZE, 6);
+            } else if (tile === 2) {
+              const bob = Math.sin(animTick * 0.08 + (r + c)) * 1.2;
+              ctx.drawImage(
+                spriteCache.DOENER,
+                x + 4,
+                y + 4 + bob,
+                TILE_SIZE - 8,
+                TILE_SIZE - 8,
+              );
+            } else if (tile === 3) {
+              const pulse = Math.sin(animTick * 0.15) * 2.5;
+              ctx.save();
+              ctx.shadowColor = "#38bdf8";
+              ctx.shadowBlur = 10;
+              ctx.drawImage(
+                spriteCache.AYRAN,
+                x + 2 - pulse / 2,
+                y + 2 - pulse / 2,
+                TILE_SIZE - 4 + pulse,
+                TILE_SIZE - 4 + pulse,
+              );
+              ctx.restore();
+            }
+          }
+        }
+      }
+
+      function drawBaki() {
+        let sprite = spriteCache.BAKI_DOWN;
+        if (baki.facing === "UP") sprite = spriteCache.BAKI_UP;
+        else if (baki.facing === "LEFT") sprite = spriteCache.BAKI_LEFT;
+        else if (baki.facing === "RIGHT") sprite = spriteCache.BAKI_RIGHT;
+
+        const isMoving = baki.dir !== DIRS.NONE && gameState === "PLAYING";
+        const walkBob = isMoving
+          ? Math.abs(Math.sin(animTick * 0.35)) * 2.2
+          : 0;
+
+        ctx.save();
+        if (ayranTimer > 0) {
+          ctx.shadowColor = animTick % 10 < 5 ? "#38bdf8" : "#fbbf24";
+          ctx.shadowBlur = 14;
+        }
+
+        const drawSize = TILE_SIZE + 4;
+        ctx.drawImage(
+          sprite,
+          Math.round(baki.x - drawSize / 2),
+          Math.round(baki.y - drawSize / 2 - walkBob),
+          drawSize,
+          drawSize,
+        );
+        ctx.restore();
+      }
+
+      function drawEnemies() {
+        enemies.forEach((en) => {
+          let sprite = spriteCache[en.sprite];
+          if (ayranTimer > 0) {
+            if (ayranTimer < 120 && Math.floor(animTick / 8) % 2 === 0) {
+              sprite = spriteCache[en.sprite];
+            } else {
+              sprite = spriteCache.ENEMY_SCARED;
+            }
+          }
+
+          const hover = Math.sin(animTick * 0.2 + en.id) * 1.8;
+          const drawSize = TILE_SIZE + 2;
+          ctx.drawImage(
+            sprite,
+            Math.round(en.x - drawSize / 2),
+            Math.round(en.y - drawSize / 2 + hover),
+            drawSize,
+            drawSize,
+          );
+        });
+      }
+
+      function drawFloatingTexts() {
+        for (let i = floatingTexts.length - 1; i >= 0; i--) {
+          const ft = floatingTexts[i];
+          ctx.save();
+          ctx.font = 'bold 11px "Press Start 2P", monospace';
+          ctx.textAlign = "center";
+          ctx.fillStyle = ft.color;
+          ctx.globalAlpha = Math.max(0, ft.life / 45);
+          ctx.shadowColor = "#000";
+          ctx.shadowBlur = 4;
+          ctx.fillText(ft.text, ft.x, ft.y);
+          ctx.restore();
+
+          ft.y += ft.vy;
+          ft.life--;
+          if (ft.life <= 0) floatingTexts.splice(i, 1);
+        }
+      }
+
+      function drawLevelBanner() {
+        if (levelBannerTimer <= 0 || gameState !== "PLAYING") return;
+        const cfg = getLevelConfig(level);
+        const alpha = Math.min(1, levelBannerTimer / 30);
+
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        const boxW = 340;
+        const boxH = 54;
+        const boxX = (canvas.width - boxW) / 2;
+        const boxY = 188;
+
+        ctx.fillStyle = "rgba(9, 13, 22, 0.92)";
+        ctx.fillRect(boxX, boxY, boxW, boxH);
+        ctx.strokeStyle = "#fbbf24";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(boxX, boxY, boxW, boxH);
+
+        ctx.font = 'bold 12px "Press Start 2P", monospace';
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#fbbf24";
+        ctx.fillText(
+          `LEVEL ${level}: ${cfg.rankTitle.toUpperCase()}`,
+          canvas.width / 2,
+          boxY + 24,
+        );
+
+        ctx.font = "600 11px Inter, sans-serif";
+        ctx.fillStyle = "#38bdf8";
+        ctx.fillText(
+          `Ayran-Boost: ${(cfg.boostFrames / 60).toFixed(1)}s  •  KI-Fokus: ${Math.round(cfg.baseTracking * 100)}%`,
+          canvas.width / 2,
+          boxY + 42,
+        );
+        ctx.restore();
+      }
+
+      function updateBoostUI() {
+        const wrapper = document.getElementById("boostBarWrapper");
+        const progress = document.getElementById("boostProgress");
+        const timerText = document.getElementById("boostTimerText");
+
+        if (ayranTimer > 0) {
+          wrapper.classList.remove("hidden");
+          const pct = Math.max(0, (ayranTimer / ayranMaxDuration) * 100);
+          progress.style.width = `${pct}%`;
+          timerText.textContent = `${(ayranTimer / 60).toFixed(1)}s`;
+        } else {
+          wrapper.classList.add("hidden");
+        }
+      }
+
+      /********************************************************************
+       * 6. MAIN GAME LOOP & ROBUST INPUT HANDLING
+       ********************************************************************/
+      function gameLoop() {
+        animTick++;
+
+        if (gameState === "PLAYING") {
+          if (ayranTimer > 0) ayranTimer--;
+          if (levelBannerTimer > 0) levelBannerTimer--;
+          moveBaki();
+          moveEnemies();
+        }
+
+        updateBoostUI();
+        drawMaze();
+        drawEnemies();
+        drawBaki();
+        drawFloatingTexts();
+        drawLevelBanner();
+
+        requestAnimationFrame(gameLoop);
+      }
+
+      function showOverlay(title, subtitleHTML, btnText) {
+        const ov = document.getElementById("overlayScreen");
+        document.getElementById("overlayTitle").textContent = title;
+        document.getElementById("overlaySubtitle").innerHTML = subtitleHTML;
+        document.getElementById("startBtn").textContent = btnText;
+        ov.classList.remove("hidden");
+      }
+
+      function hideOverlay() {
+        document.getElementById("overlayScreen").classList.add("hidden");
+      }
+
+      function startNewGame(initialDir = DIRS.NONE) {
+        sfx.init();
+        score = 0;
+        level = 1;
+        lives = 3;
+        ayranTimer = 0;
+        levelBannerTimer = 150;
+        floatingTexts = [];
+        resetMaze();
+        resetPositions();
+        if (initialDir !== DIRS.NONE) {
+          baki.nextDir = initialDir;
+        }
+        updateHUD();
+        hideOverlay();
+        gameState = "PLAYING";
+        canvas.focus();
+      }
+
+      function togglePause() {
+        if (gameState === "PLAYING") {
+          gameState = "PAUSED";
+          showOverlay(
+            "SPIEL PAUSIERT",
+            "Kurze Verschnaufpause für Baki! Der Döner bleibt warm.",
+            "▶ WEITERSPIELEN",
+          );
+        } else if (gameState === "PAUSED") {
+          hideOverlay();
+          gameState = "PLAYING";
+          canvas.focus();
+        }
+      }
+
+      function setBakiDirection(newDir) {
+        if (!newDir || newDir === DIRS.NONE) return;
+
+        // If on Start screen, pressing any movement key or D-Pad button starts the game immediately!
+        if (gameState === "START") {
+          startNewGame(newDir);
+          return;
+        }
+        if (gameState === "PAUSED") {
+          togglePause();
+        }
+        baki.nextDir = newDir;
+      }
+
+      // Global Keyboard Listener (captures Arrow keys & WASD reliably without scrolling)
+      window.addEventListener(
+        "keydown",
+        (e) => {
+          const code = e.code;
+          const key = e.key.toLowerCase();
+
+          if (
+            [
+              "ArrowUp",
+              "ArrowDown",
+              "ArrowLeft",
+              "ArrowRight",
+              "Space",
+            ].includes(code) ||
+            ["w", "a", "s", "d"].includes(key)
+          ) {
+            e.preventDefault();
+          }
+
+          if (key === "p" || code === "Escape") {
+            togglePause();
+            return;
+          }
+
+          if (code === "Enter" || code === "Space") {
+            if (gameState === "START" || gameState === "GAMEOVER") {
+              startNewGame();
+              return;
+            } else if (gameState === "PAUSED") {
+              togglePause();
+              return;
+            }
+          }
+
+          if (code === "ArrowUp" || key === "w") setBakiDirection(DIRS.UP);
+          else if (code === "ArrowDown" || key === "s")
+            setBakiDirection(DIRS.DOWN);
+          else if (code === "ArrowLeft" || key === "a")
+            setBakiDirection(DIRS.LEFT);
+          else if (code === "ArrowRight" || key === "d")
+            setBakiDirection(DIRS.RIGHT);
+        },
+        { passive: false },
+      );
+
+      // Interactive D-Pad Buttons (works with both Mouse Click & Touch)
+      document.querySelectorAll(".dpad-btn").forEach((btn) => {
+        const handleInput = (e) => {
+          e.preventDefault();
+          const dirName = btn.getAttribute("data-dir");
+          if (DIRS[dirName]) {
+            setBakiDirection(DIRS[dirName]);
+            btn.classList.add("active-press");
+            setTimeout(() => btn.classList.remove("active-press"), 120);
+          }
+        };
+        btn.addEventListener("touchstart", handleInput, { passive: false });
+        btn.addEventListener("mousedown", handleInput);
+      });
+
+      // Swipe Gesture Support on Canvas
+      let touchStartX = 0;
+      let touchStartY = 0;
+      canvas.addEventListener(
+        "touchstart",
+        (e) => {
+          touchStartX = e.changedTouches[0].screenX;
+          touchStartY = e.changedTouches[0].screenY;
+        },
+        { passive: true },
+      );
+
+      canvas.addEventListener(
+        "touchend",
+        (e) => {
+          const dx = e.changedTouches[0].screenX - touchStartX;
+          const dy = e.changedTouches[0].screenY - touchStartY;
+          if (Math.hypot(dx, dy) > 20) {
+            if (Math.abs(dx) > Math.abs(dy)) {
+              setBakiDirection(dx > 0 ? DIRS.RIGHT : DIRS.LEFT);
+            } else {
+              setBakiDirection(dy > 0 ? DIRS.DOWN : DIRS.UP);
+            }
+          }
+        },
+        { passive: true },
+      );
+
+      // Clicking the canvas guarantees keyboard focus in iframe / VS Code preview
+      canvas.addEventListener("mousedown", () => {
+        canvas.focus();
+      });
+
+      // UI Buttons
+      document.getElementById("startBtn").addEventListener("click", () => {
+        if (gameState === "PAUSED") {
+          togglePause();
+        } else {
+          startNewGame();
+        }
+      });
+
+      document
+        .getElementById("pauseBtn")
+        .addEventListener("click", togglePause);
+
+      document.getElementById("muteBtn").addEventListener("click", () => {
+        const isMuted = sfx.toggleMute();
+        document.getElementById("muteIcon").textContent = isMuted ? "🔇" : "🔊";
+        canvas.focus();
+      });
+
+      // Initialize Everything on Window Load
+      window.onload = function () {
+        initSprites();
+
+        renderPreviewCanvas("headerBakiIcon", "BAKI_DOWN");
+        renderPreviewCanvas("previewBakiFront", "BAKI_DOWN");
+        renderPreviewCanvas("previewBakiBack", "BAKI_UP");
+        renderPreviewCanvas("previewDoener", "DOENER");
+        renderPreviewCanvas("previewAyran", "AYRAN");
+
+        renderPreviewCanvas("legendBakiFront", "BAKI_DOWN");
+        renderPreviewCanvas("legendBakiBack", "BAKI_UP");
+        renderPreviewCanvas("legendDoener", "DOENER");
+        renderPreviewCanvas("legendAyran", "AYRAN");
+        renderPreviewCanvas("legendEnemy0", "ENEMY_0");
+        renderPreviewCanvas("legendEnemy1", "ENEMY_1");
+        renderPreviewCanvas("legendEnemy2", "ENEMY_2");
+        renderPreviewCanvas("legendEnemy3", "ENEMY_3");
+
+        resetMaze();
+        resetPositions();
+        updateHUD();
+        gameLoop();
+      };
+    </script>
+  </body>
+</html>
