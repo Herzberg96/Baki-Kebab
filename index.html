@@ -1037,10 +1037,10 @@
         // Baki moves at a crisp 2.35 px/frame in Level 1, gently scaling up to 2.55 max
         const bakiSpeed = Math.min(2.55, 2.35 + (lvl - 1) * 0.04);
 
-        // Enemy base speed: 1.22 in Level 1, +0.12 per level, capped at 2.15 so Baki always has an edge
+        // Enemy base speed: 1.35 in Level 1, +0.15 per level, capped at 2.15 so Baki always has an edge
         const enemyBaseSpeed = Math.min(
           2.15,
-          Math.min(bakiSpeed - 0.25, 1.22 + (lvl - 1) * 0.12),
+          Math.min(bakiSpeed - 0.25, 1.35 + (lvl - 1) * 0.15),
         );
 
         // AI tracking accuracy: 35% smart turns in Level 1 -> +10% per level up to 85%
