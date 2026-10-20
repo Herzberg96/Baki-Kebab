@@ -325,7 +325,7 @@
             </h2>
             <p
               id="overlaySubtitle"
-              class="text-xs sm:text-sm text-slate-300 max-w-md mb-5 leading-relaxed"
+              class="text-xs sm:text-sm text-slate-300 max-w-md mb-4 leading-relaxed"
             >
               Steuere <strong class="text-amber-300">Baki</strong> in seiner
               schwarz-goldenen
@@ -335,6 +335,37 @@
               und weiche der
               <strong class="text-rose-400">Anti-Döner-Fraktion</strong> aus!
             </p>
+
+            <!-- NEU: Game Over Leaderboard Name-Eingabe (erscheint nur bei GAMEOVER) -->
+            <div
+              id="gameOverScoreBox"
+              class="hidden w-full max-w-sm bg-slate-900/95 border border-amber-500/40 rounded-xl p-3 mb-4 shadow-lg"
+            >
+              <div class="text-[11px] font-bold text-amber-300 mb-2">
+                🏆 IN DIE BESTENLISTE EINTRAGEN (NUR BESTER SCORE)
+              </div>
+              <div class="flex items-center gap-2">
+                <input
+                  id="playerNameInput"
+                  type="text"
+                  maxlength="15"
+                  placeholder="DEIN NAME..."
+                  autocomplete="off"
+                  class="flex-1 bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-lg px-3 py-2 text-xs font-pixel text-amber-400 uppercase outline-none"
+                />
+                <button
+                  id="submitScoreBtn"
+                  type="button"
+                  class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-pixel text-[10px] px-3 py-2.5 rounded-lg font-bold transition cursor-pointer shrink-0"
+                >
+                  SPEICHERN
+                </button>
+              </div>
+              <div
+                id="submitScoreStatus"
+                class="text-[11px] mt-1.5 min-h-[16px] text-emerald-400 font-medium"
+              ></div>
+            </div>
 
             <button
               id="startBtn"
@@ -409,8 +440,53 @@
         </div>
       </div>
 
-      <!-- Right Column: Legend, Characters & Rules -->
+      <!-- Right Column: Leaderboard, Legend, Characters & Rules -->
       <div class="w-full max-w-[540px] lg:w-80 flex flex-col gap-4">
+        <!-- NEU: Online Leaderboard Card (im selben Design wie die anderen Cards) -->
+        <div
+          class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl"
+        >
+          <div
+            class="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-800"
+          >
+            <div class="flex items-center gap-2">
+              <span class="text-amber-400 text-lg">🏆</span>
+              <h3 class="font-pixel text-[11px] text-amber-400">
+                TOP 10 DÖNER-JÄGER
+              </h3>
+            </div>
+            <span
+              id="lbStatusBadge"
+              class="text-[9px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-semibold"
+              >Lokal</span
+            >
+          </div>
+          <div class="overflow-y-auto max-h-44 pr-1">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr
+                  class="text-[10px] text-slate-400 border-b border-slate-800"
+                >
+                  <th class="py-1 w-7">#</th>
+                  <th class="py-1">Spieler</th>
+                  <th class="py-1 text-right">Punkte</th>
+                  <th class="py-1 text-right">Lvl</th>
+                </tr>
+              </thead>
+              <tbody
+                id="leaderboardTableBody"
+                class="text-xs divide-y divide-slate-800/50"
+              >
+                <tr>
+                  <td colspan="4" class="py-3 text-center text-slate-500">
+                    Lade Bestenliste...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <!-- Baki & Jacket Info Card -->
         <div
           class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl"
@@ -713,7 +789,6 @@
       };
 
       const SPRITES = {
-        // BAKI FRONT / DOWN: Broad shoulders, black/gold cap, warm light skin ('T'), dark full beard ('V'), Sukajan jacket (black chest, gold zipper/trim, white sleeves)
         BAKI_DOWN: [
           "....KKKKKKKK....",
           "...KDDDDDDDDK...",
@@ -733,7 +808,6 @@
           "..KK.KK..KK.KK..",
         ],
 
-        // BAKI UP (BACK VIEW): Back of cap, warm light neck ('T') + Sukajan Jacket with Golden/Turquoise/Red TENRYU DRAGON Embroidery!
         BAKI_UP: [
           "....KKKKKKKK....",
           "...KDDDDDDDDK...",
@@ -753,7 +827,6 @@
           "................",
         ],
 
-        // BAKI RIGHT: Cap visor pointing right, warm light skin ('T'), distinct dark full beard ('V'), white Sukajan sleeve with gold stripe
         BAKI_RIGHT: [
           "....KKKKKKKK....",
           "...KDDDDDDDDK...",
@@ -773,7 +846,6 @@
           "...KKK....KKK...",
         ],
 
-        // DÖNER KEBAB: Golden triangular flatbread pocket, meat, green lettuce, red tomato, white garlic sauce
         DOENER: [
           "................",
           ".....KKKKKK.....",
@@ -793,7 +865,6 @@
           "................",
         ],
 
-        // AYRAN CUP: Frothy white yogurt cup with straw & blue/red classic logo
         AYRAN: [
           ".........KKK....",
           "........KRRK....",
@@ -813,7 +884,6 @@
           "................",
         ],
 
-        // ENEMY 0: BROKKOLI-BOSS
         ENEMY_BROKKOLI: [
           "....KKKKKKKK....",
           "..KKLLLLLLLLKK..",
@@ -833,7 +903,6 @@
           "................",
         ],
 
-        // ENEMY 1: DIE HANTEL
         ENEMY_HANTEL: [
           "................",
           ".KKKK......KKKK.",
@@ -853,7 +922,6 @@
           "................",
         ],
 
-        // ENEMY 2: DIE SALAT-BOWL
         ENEMY_SALAT: [
           "....KKK..KKK....",
           "..KKLLLRRLLLKK..",
@@ -873,7 +941,6 @@
           "................",
         ],
 
-        // ENEMY 3: DIE KAMPFSPORT-KAROTTE
         ENEMY_KAROTTE: [
           ".....KK..KK.....",
           "....KLLKKLLK....",
@@ -893,7 +960,6 @@
           ".......KKK......",
         ],
 
-        // FRIGHTENED ENEMY (Panicked Blue during Ayran Boost)
         ENEMY_SCARED: [
           "....KKKKKKKK....",
           "..KKZZZZZZZZKK..",
@@ -961,36 +1027,169 @@
       }
 
       /********************************************************************
-       * 3. MAZE DEFINITION & GAME STATE
+       * 3. 5 VARIED LEVEL DESIGNS (19x21) & GAME STATE
+       *    1 = Wall, 2 = Döner, 3 = Ayran, 4 = Ghost Door, 0 = Empty Floor
        ********************************************************************/
       const TILE_SIZE = 28;
       const COLS = 19;
       const ROWS = 21;
 
-      // 1 = Wall, 2 = Döner, 3 = Ayran Power-Up (4 corners), 4 = Ghost House Door, 0 = Empty Floor
-      const BASE_MAZE = [
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 3, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 3, 1],
-        [1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1],
-        [1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1],
-        [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-        [1, 2, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1],
-        [1, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 1],
-        [1, 1, 1, 1, 2, 1, 1, 1, 0, 1, 0, 1, 1, 1, 2, 1, 1, 1, 1],
-        [0, 0, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0],
-        [1, 1, 1, 1, 2, 1, 0, 1, 1, 4, 1, 1, 0, 1, 2, 1, 1, 1, 1],
-        [0, 0, 0, 0, 2, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2, 0, 0, 0, 0],
-        [1, 1, 1, 1, 2, 1, 0, 1, 1, 1, 1, 1, 0, 1, 2, 1, 1, 1, 1],
-        [0, 0, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0],
-        [1, 1, 1, 1, 2, 1, 0, 1, 1, 1, 1, 1, 0, 1, 2, 1, 1, 1, 1],
-        [1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-        [1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1],
-        [1, 2, 2, 1, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 1, 2, 2, 1],
-        [1, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1],
-        [1, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 1],
-        [1, 3, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 3, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      const LEVEL_DESIGNS = [
+        // LEVEL 1: Aufwärmrunde (Dein Original-Layout & Klassik-Farben)
+        {
+          wallFill: "#1e293b",
+          wallStroke: "#d97706",
+          floorBg: "#090d16",
+          tunnelRows: [10],
+          map: [
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 3, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 3, 1],
+            [1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1],
+            [1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1],
+            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+            [1, 2, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1],
+            [1, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 1],
+            [1, 1, 1, 1, 2, 1, 1, 1, 0, 1, 0, 1, 1, 1, 2, 1, 1, 1, 1],
+            [0, 0, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0],
+            [1, 1, 1, 1, 2, 1, 0, 1, 1, 4, 1, 1, 0, 1, 2, 1, 1, 1, 1],
+            [0, 0, 0, 0, 2, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2, 0, 0, 0, 0],
+            [1, 1, 1, 1, 2, 1, 0, 1, 1, 1, 1, 1, 0, 1, 2, 1, 1, 1, 1],
+            [0, 0, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0],
+            [1, 1, 1, 1, 2, 1, 0, 1, 1, 1, 1, 1, 0, 1, 2, 1, 1, 1, 1],
+            [1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+            [1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1],
+            [1, 2, 2, 1, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 1, 2, 2, 1],
+            [1, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1],
+            [1, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 1],
+            [1, 3, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 3, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+          ],
+        },
+        // LEVEL 2: Diät-Alarm (Imbiss-Neonrot, 2 Seitentunnel in Zeile 6 & 14)
+        {
+          wallFill: "#3b1018",
+          wallStroke: "#ef4444",
+          floorBg: "#120609",
+          tunnelRows: [6, 14],
+          map: [
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 3, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 3, 1],
+            [1, 2, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1],
+            [1, 2, 1, 1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1, 1, 2, 1],
+            [1, 2, 2, 2, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 2, 2, 2, 1],
+            [1, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1, 1, 1, 1],
+            [0, 0, 2, 2, 2, 2, 2, 1, 1, 0, 1, 1, 2, 2, 2, 2, 2, 0, 0],
+            [1, 1, 1, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 1, 1, 1],
+            [1, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 1],
+            [1, 2, 1, 1, 2, 1, 0, 1, 1, 4, 1, 1, 0, 1, 2, 1, 1, 2, 1],
+            [1, 2, 1, 1, 2, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2, 1, 1, 2, 1],
+            [1, 2, 1, 1, 2, 1, 0, 1, 1, 1, 1, 1, 0, 1, 2, 1, 1, 2, 1],
+            [1, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 1],
+            [1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1],
+            [0, 0, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 0, 0],
+            [1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1],
+            [1, 2, 2, 2, 2, 1, 2, 2, 2, 0, 2, 2, 2, 1, 2, 2, 2, 2, 1],
+            [1, 2, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 2, 1],
+            [1, 2, 1, 1, 1, 1, 2, 2, 2, 1, 2, 2, 2, 1, 1, 1, 1, 2, 1],
+            [1, 3, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 3, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+          ],
+        },
+        // LEVEL 3: Fitness-Wahn (Giftgrün, verwinkelte Kreuzungen, Tunnel in Zeile 10)
+        {
+          wallFill: "#0d3320",
+          wallStroke: "#22c55e",
+          floorBg: "#05120b",
+          tunnelRows: [10],
+          map: [
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 3, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 3, 1],
+            [1, 2, 1, 2, 1, 2, 1, 1, 2, 1, 2, 1, 1, 2, 1, 2, 1, 2, 1],
+            [1, 2, 1, 2, 2, 2, 1, 1, 2, 2, 2, 1, 1, 2, 2, 2, 1, 2, 1],
+            [1, 2, 1, 1, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 1, 1, 2, 1],
+            [1, 2, 2, 2, 2, 2, 1, 1, 2, 1, 2, 1, 1, 2, 2, 2, 2, 2, 1],
+            [1, 1, 1, 2, 1, 2, 2, 2, 2, 0, 2, 2, 2, 2, 1, 2, 1, 1, 1],
+            [1, 3, 2, 2, 1, 2, 1, 1, 0, 1, 0, 1, 1, 2, 1, 2, 2, 3, 1],
+            [1, 2, 1, 1, 1, 2, 0, 0, 0, 0, 0, 0, 0, 2, 1, 1, 1, 2, 1],
+            [1, 2, 2, 2, 1, 2, 0, 1, 1, 4, 1, 1, 0, 2, 1, 2, 2, 2, 1],
+            [0, 0, 1, 2, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 2, 1, 0, 0],
+            [1, 2, 2, 2, 1, 2, 0, 1, 1, 1, 1, 1, 0, 2, 1, 2, 2, 2, 1],
+            [1, 2, 1, 1, 1, 2, 0, 0, 0, 0, 0, 0, 0, 2, 1, 1, 1, 2, 1],
+            [1, 2, 2, 2, 2, 2, 1, 1, 2, 1, 2, 1, 1, 2, 2, 2, 2, 2, 1],
+            [1, 1, 1, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 1, 1, 1],
+            [1, 2, 2, 2, 1, 2, 1, 1, 2, 1, 2, 1, 1, 2, 1, 2, 2, 2, 1],
+            [1, 2, 1, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 1, 2, 1],
+            [1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1],
+            [1, 2, 2, 2, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 2, 2, 2, 1],
+            [1, 3, 1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 3, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+          ],
+        },
+        // LEVEL 4: Endstufe Scharf (Violett/Pink, 2 Seitentunnel in Zeile 8 & 12)
+        {
+          wallFill: "#2e1042",
+          wallStroke: "#d946ef",
+          floorBg: "#11051a",
+          tunnelRows: [8, 12],
+          map: [
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 3, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 3, 1],
+            [1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1],
+            [1, 2, 1, 1, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 1, 1, 2, 1],
+            [1, 2, 2, 2, 1, 2, 1, 1, 2, 1, 2, 1, 1, 2, 1, 2, 2, 2, 1],
+            [1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1, 1, 1],
+            [1, 2, 2, 2, 2, 2, 1, 1, 0, 1, 0, 1, 1, 2, 2, 2, 2, 2, 1],
+            [1, 2, 1, 1, 1, 2, 1, 0, 0, 0, 0, 0, 1, 2, 1, 1, 1, 2, 1],
+            [0, 2, 2, 2, 1, 2, 0, 0, 0, 0, 0, 0, 0, 2, 1, 2, 2, 2, 0],
+            [1, 1, 1, 2, 1, 2, 0, 1, 1, 4, 1, 1, 0, 2, 1, 2, 1, 1, 1],
+            [1, 2, 2, 2, 2, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2, 2, 2, 2, 1],
+            [1, 1, 1, 2, 1, 2, 0, 1, 1, 1, 1, 1, 0, 2, 1, 2, 1, 1, 1],
+            [0, 2, 2, 2, 1, 2, 0, 0, 0, 0, 0, 0, 0, 2, 1, 2, 2, 2, 0],
+            [1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1],
+            [1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+            [1, 2, 1, 1, 1, 2, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, 1, 2, 1],
+            [1, 2, 1, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 1, 2, 1],
+            [1, 2, 1, 2, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2, 1, 2, 1],
+            [1, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 1],
+            [1, 3, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 3, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+          ],
+        },
+        // LEVEL 5: Mit Alles & Scharf (Gold/Bronze, 2 Seitentunnel in Zeile 5 & 15)
+        {
+          wallFill: "#3b2806",
+          wallStroke: "#fbbf24",
+          floorBg: "#140d02",
+          tunnelRows: [5, 15],
+          map: [
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 1],
+            [1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1],
+            [1, 2, 2, 1, 2, 1, 1, 2, 2, 1, 2, 2, 1, 1, 2, 1, 2, 2, 1],
+            [1, 1, 2, 1, 2, 2, 2, 2, 1, 1, 1, 2, 2, 2, 2, 1, 2, 1, 1],
+            [0, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 0],
+            [1, 2, 1, 1, 2, 1, 1, 1, 0, 1, 0, 1, 1, 1, 2, 1, 1, 2, 1],
+            [1, 2, 1, 1, 2, 2, 2, 0, 0, 0, 0, 0, 2, 2, 2, 1, 1, 2, 1],
+            [1, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 1],
+            [1, 1, 1, 1, 2, 1, 0, 1, 1, 4, 1, 1, 0, 1, 2, 1, 1, 1, 1],
+            [1, 2, 2, 2, 2, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2, 2, 2, 2, 1],
+            [1, 2, 1, 1, 2, 1, 0, 1, 1, 1, 1, 1, 0, 1, 2, 1, 1, 2, 1],
+            [1, 2, 1, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 1, 2, 1],
+            [1, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 1],
+            [1, 2, 1, 1, 1, 1, 2, 2, 2, 1, 2, 2, 2, 1, 1, 1, 1, 2, 1],
+            [0, 2, 2, 2, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 2, 2, 2, 0],
+            [1, 1, 1, 1, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 1, 1, 1, 1],
+            [1, 2, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 2, 1],
+            [1, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 1],
+            [1, 3, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 3, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+          ],
+        },
       ];
+
+      function getCurrentDesign() {
+        return LEVEL_DESIGNS[(level - 1) % LEVEL_DESIGNS.length];
+      }
 
       const DIRS = {
         UP: { x: 0, y: -1, name: "UP" },
@@ -1022,7 +1221,7 @@
       let levelBannerTimer = 0;
       let floatingTexts = [];
 
-      // Progressive Level Difficulty Helper
+      // Progressive Level Difficulty Helper (inkl. DÖNER-MEISTER Turbo ab Level 6!)
       function getLevelConfig(lvl) {
         const ranks = [
           "Aufwärmrunde", // Level 1
@@ -1032,28 +1231,43 @@
           "Mit Alles & Scharf", // Level 5
           "Döner-Meister", // Level 6+
         ];
-        const rankTitle = ranks[Math.min(lvl - 1, ranks.length - 1)];
+        const isDoenerMeister = lvl >= 6;
+        const rankTitle = isDoenerMeister
+          ? `Döner-Meister ${lvl - 5}`
+          : ranks[lvl - 1];
 
         // Baki moves at a crisp 2.35 px/frame in Level 1, gently scaling up to 2.55 max
         const bakiSpeed = Math.min(2.55, 2.35 + (lvl - 1) * 0.04);
 
-        // Enemy base speed: 1.35 in Level 1, +0.15 per level, capped at 2.15 so Baki always has an edge
-        const enemyBaseSpeed = Math.min(
-          2.15,
-          Math.min(bakiSpeed - 0.25, 1.35 + (lvl - 1) * 0.15),
-        );
+        // Enemy base speed: 1.35 in Level 1, +0.15 per level.
+        // Ab Level 6 (Döner-Meister): Stark erhöhte Geschwindigkeit für Gemüseverweigerer!
+        let enemyBaseSpeed;
+        if (!isDoenerMeister) {
+          enemyBaseSpeed = Math.min(
+            2.15,
+            Math.min(bakiSpeed - 0.25, 1.35 + (lvl - 1) * 0.15),
+          );
+        } else {
+          enemyBaseSpeed = Math.min(bakiSpeed - 0.08, 2.25 + (lvl - 6) * 0.07);
+        }
 
-        // AI tracking accuracy: 35% smart turns in Level 1 -> +10% per level up to 85%
-        const baseTracking = Math.min(0.85, 0.35 + (lvl - 1) * 0.1);
+        // AI tracking accuracy: 35% smart turns in Level 1 -> +10% per level (92% in Döner-Meister)
+        const baseTracking = isDoenerMeister
+          ? 0.92
+          : Math.min(0.85, 0.35 + (lvl - 1) * 0.1);
 
-        // Ayran boost duration: 8.5s (510 frames) in Level 1, -0.6s (36 frames) per level, min 4.0s (240 frames)
-        const boostFrames = Math.max(240, 510 - (lvl - 1) * 36);
+        // Ayran boost duration: 8.5s (510 frames) in Level 1, shorter in Döner-Meister
+        const boostFrames = isDoenerMeister
+          ? Math.max(150, 210 - (lvl - 6) * 18)
+          : Math.max(240, 510 - (lvl - 1) * 36);
 
         // Frightened speed: 0.85 px/frame in Level 1, scaling slightly in higher levels
-        const scaredSpeed = Math.min(1.2, 0.85 + (lvl - 1) * 0.05);
+        const scaredSpeed = Math.min(1.35, 0.85 + (lvl - 1) * 0.05);
 
-        // Staggered Ghost House release delays: 0s, 3.5s (210f), 7.0s (420f), 10.5s (630f) in Level 1
-        const releaseScale = Math.max(0.3, 1 - (lvl - 1) * 0.14);
+        // Staggered Ghost House release delays
+        const releaseScale = isDoenerMeister
+          ? 0.2
+          : Math.max(0.3, 1 - (lvl - 1) * 0.14);
 
         return {
           rankTitle,
@@ -1080,7 +1294,8 @@
       let enemies = [];
 
       function resetMaze() {
-        maze = BASE_MAZE.map((row) => [...row]);
+        const design = getCurrentDesign();
+        maze = design.map.map((row) => [...row]);
         remainingDoeners = 0;
         for (let r = 0; r < ROWS; r++) {
           for (let c = 0; c < COLS; c++) {
@@ -1102,7 +1317,6 @@
         baki.speed = cfg.bakiSpeed;
         ayranMaxDuration = cfg.boostFrames;
 
-        // Level 1 speeds span 1.10 to 1.25 px/frame, scaling smoothly by +0.12 per level
         enemies = [
           {
             id: 0,
@@ -1111,10 +1325,10 @@
             x: 9 * TILE_SIZE + TILE_SIZE / 2,
             y: 8 * TILE_SIZE + TILE_SIZE / 2,
             dir: DIRS.LEFT,
-            speed: cfg.enemyBaseSpeed, // 1.22 in Level 1
-            trackingChance: Math.min(0.9, cfg.baseTracking + 0.05),
+            speed: cfg.enemyBaseSpeed,
+            trackingChance: Math.min(0.95, cfg.baseTracking + 0.05),
             inHouse: false,
-            releaseDelay: 0, // 0s
+            releaseDelay: 0,
             lastDecisionTile: "",
           },
           {
@@ -1124,10 +1338,10 @@
             x: 9 * TILE_SIZE + TILE_SIZE / 2,
             y: 10 * TILE_SIZE + TILE_SIZE / 2,
             dir: DIRS.UP,
-            speed: cfg.enemyBaseSpeed * 0.95, // ~1.16 in Level 1
+            speed: cfg.enemyBaseSpeed * 0.95,
             trackingChance: cfg.baseTracking,
             inHouse: true,
-            releaseDelay: Math.round(210 * cfg.releaseScale), // 3.5s in Level 1
+            releaseDelay: Math.round(210 * cfg.releaseScale),
             lastDecisionTile: "",
           },
           {
@@ -1137,10 +1351,10 @@
             x: 8 * TILE_SIZE + TILE_SIZE / 2,
             y: 10 * TILE_SIZE + TILE_SIZE / 2,
             dir: DIRS.UP,
-            speed: cfg.enemyBaseSpeed * 0.9, // ~1.10 in Level 1
+            speed: cfg.enemyBaseSpeed * 0.9,
             trackingChance: Math.max(0.25, cfg.baseTracking - 0.05),
             inHouse: true,
-            releaseDelay: Math.round(420 * cfg.releaseScale), // 7.0s in Level 1
+            releaseDelay: Math.round(420 * cfg.releaseScale),
             lastDecisionTile: "",
           },
           {
@@ -1150,10 +1364,10 @@
             x: 10 * TILE_SIZE + TILE_SIZE / 2,
             y: 10 * TILE_SIZE + TILE_SIZE / 2,
             dir: DIRS.UP,
-            speed: Math.min(cfg.bakiSpeed - 0.22, cfg.enemyBaseSpeed * 1.025), // ~1.25 in Level 1
-            trackingChance: Math.min(0.88, cfg.baseTracking + 0.03),
+            speed: Math.min(cfg.bakiSpeed - 0.06, cfg.enemyBaseSpeed * 1.025),
+            trackingChance: Math.min(0.95, cfg.baseTracking + 0.03),
             inHouse: true,
-            releaseDelay: Math.round(630 * cfg.releaseScale), // 10.5s in Level 1
+            releaseDelay: Math.round(630 * cfg.releaseScale),
             lastDecisionTile: "",
           },
         ];
@@ -1186,6 +1400,14 @@
         }
       }
 
+      window.syncHighScoreFromLeaderboard = function (topScore) {
+        if (topScore > highScore) {
+          highScore = topScore;
+          localStorage.setItem("bakiDoenerHighscore", highScore.toString());
+          document.getElementById("highScoreEl").textContent = highScore;
+        }
+      };
+
       function addFloatingText(text, x, y, color = "#fbbf24") {
         floatingTexts.push({
           text,
@@ -1199,9 +1421,6 @@
 
       /********************************************************************
        * 4. BUTTER-SMOOTH PAC-MAN MOVEMENT & COLLISION ENGINE
-       *    - Instant 180-degree reversal anywhere
-       *    - Generous corner turn tolerance (Corner Pre-Turning / Snap)
-       *    - Exact grid-center alignment without getting stuck on edges
        ********************************************************************/
       function wrapCol(col) {
         if (col < 0) return COLS - 1;
@@ -1209,11 +1428,14 @@
         return col;
       }
 
+      function isTunnelRow(row) {
+        return getCurrentDesign().tunnelRows.includes(row);
+      }
+
       function isWallForBaki(col, row) {
         if (row < 0 || row >= ROWS) return true;
-        // Row 10 is the wrap-around tunnel
         if (col < 0 || col >= COLS) {
-          return row !== 10;
+          return !isTunnelRow(row);
         }
         const tile = maze[row][col];
         return tile === 1 || tile === 4;
@@ -1222,7 +1444,7 @@
       function isWallForEnemy(col, row, inHouse) {
         if (row < 0 || row >= ROWS) return true;
         if (col < 0 || col >= COLS) {
-          return row !== 10;
+          return !isTunnelRow(row);
         }
         const tile = maze[row][col];
         if (tile === 1) return true;
@@ -1239,7 +1461,6 @@
 
         // 1. Handle buffered direction input (baki.nextDir)
         if (baki.nextDir !== DIRS.NONE) {
-          // Case A: Standing still -> start immediately if tile in nextDir is free
           if (baki.dir === DIRS.NONE) {
             if (
               !isWallForBaki(
@@ -1250,22 +1471,17 @@
               baki.dir = baki.nextDir;
               baki.facing = baki.dir.name;
             }
-          }
-          // Case B: 180-degree opposite reversal -> ALWAYS execute immediately, even between tiles!
-          else if (
+          } else if (
             baki.dir.x === -baki.nextDir.x &&
             baki.dir.y === -baki.nextDir.y
           ) {
             baki.dir = baki.nextDir;
             baki.facing = baki.dir.name;
-          }
-          // Case C: 90-degree corner turn -> check within generous tolerance zone around tile center
-          else if (baki.dir !== baki.nextDir) {
+          } else if (baki.dir !== baki.nextDir) {
             const distToCenter = Math.hypot(
               baki.x - tileCenterX,
               baki.y - tileCenterY,
             );
-            // 9px tolerance ensures Baki never misses a turn even at higher speeds
             if (distToCenter <= 9.5) {
               const turnCol = centerCol + baki.nextDir.x;
               const turnRow = centerRow + baki.nextDir.y;
@@ -1281,7 +1497,6 @@
 
         // 2. Move along current direction & keep centered in the lane
         if (baki.dir !== DIRS.NONE) {
-          // Gently lock perpendicular axis to the tile center so Baki never scrapes walls
           if (baki.dir.x !== 0) {
             baki.y = tileCenterY;
           } else if (baki.dir.y !== 0) {
@@ -1291,7 +1506,6 @@
           const nextX = baki.x + baki.dir.x * baki.speed;
           const nextY = baki.y + baki.dir.y * baki.speed;
 
-          // Check if we are moving past the center of the current tile toward a wall
           const movingPastCenterX =
             (baki.dir.x > 0 && nextX > tileCenterX) ||
             (baki.dir.x < 0 && nextX < tileCenterX);
@@ -1303,7 +1517,6 @@
             (movingPastCenterX || movingPastCenterY) &&
             isWallForBaki(centerCol + baki.dir.x, centerRow + baki.dir.y)
           ) {
-            // Stop cleanly at the exact tile center
             baki.x = tileCenterX;
             baki.y = tileCenterY;
           } else {
@@ -1360,7 +1573,6 @@
             return;
           }
 
-          // Smoothly exit the Ghost House in the center (to row 8, col 9)
           if (en.inHouse) {
             const targetX = 9 * TILE_SIZE + halfTile;
             const targetY = 8 * TILE_SIZE + halfTile;
@@ -1379,7 +1591,6 @@
             return;
           }
 
-          // During Ayran boost, enemies slow down (0.85 px/frame in Level 1, scaling slightly)
           const currentSpeed = ayranTimer > 0 ? cfg.scaredSpeed : en.speed;
           const col = Math.floor(en.x / TILE_SIZE);
           const row = Math.floor(en.y / TILE_SIZE);
@@ -1387,7 +1598,6 @@
           const centerY = row * TILE_SIZE + halfTile;
           const tileKey = `${col},${row}`;
 
-          // Make direction decision once per tile when reaching its center
           const distToCenter = Math.hypot(en.x - centerX, en.y - centerY);
           if (
             distToCenter <= currentSpeed + 0.8 &&
@@ -1415,7 +1625,6 @@
               en.dir = possibleDirs[0];
             } else {
               if (ayranTimer > 0) {
-                // Frightened: flee away from Baki
                 possibleDirs.sort((a, b) => {
                   const da = Math.hypot(
                     (col + a.x) * TILE_SIZE - baki.x,
@@ -1434,7 +1643,6 @@
                         Math.floor(Math.random() * possibleDirs.length)
                       ];
               } else {
-                // Progressive AI tracking: ~35% smart tracking in Level 1 (+10% per level up to 85%+)
                 if (Math.random() < en.trackingChance) {
                   possibleDirs.sort((a, b) => {
                     const da = Math.hypot(
@@ -1458,14 +1666,12 @@
             }
           }
 
-          // Keep aligned on track
           if (en.dir.x !== 0) en.y = centerY;
           if (en.dir.y !== 0) en.x = centerX;
 
           en.x += en.dir.x * currentSpeed;
           en.y += en.dir.y * currentSpeed;
 
-          // Horizontal Tunnel Wrap
           if (en.x < -halfTile + 2) {
             en.x = COLS * TILE_SIZE - halfTile - 2;
             en.lastDecisionTile = "";
@@ -1474,7 +1680,6 @@
             en.lastDecisionTile = "";
           }
 
-          // Check Collision with Baki
           const dBaki = Math.hypot(en.x - baki.x, en.y - baki.y);
           if (dBaki < TILE_SIZE * 0.68) {
             if (ayranTimer > 0) {
@@ -1485,7 +1690,6 @@
               addFloatingText(`+${pts}`, en.x, en.y, "#38bdf8");
               updateHUD();
 
-              // Send defeated enemy back to center house
               en.x = 9 * TILE_SIZE + halfTile;
               en.y = 10 * TILE_SIZE + halfTile;
               en.inHouse = true;
@@ -1511,6 +1715,7 @@
             "GAME OVER!",
             `Oh nein! <strong class="text-rose-400">${enemyName}</strong> hat Baki erwischt und ihm den Appetit verdorben!<br><br>Dein Endstand: <strong class="text-amber-400">${score} Punkte</strong> (Level ${level} – ${cfg.rankTitle})`,
             "🔄 NOCHMAL VERSUCHEN",
+            true,
           );
         } else {
           gameState = "LIFE_LOST";
@@ -1545,16 +1750,17 @@
           resetMaze();
           resetPositions();
           updateHUD();
-          levelBannerTimer = 150; // Show new level & difficulty banner for 2.5 seconds
+          levelBannerTimer = 150;
           gameState = "PLAYING";
         }, 1800);
       }
 
       /********************************************************************
-       * 5. RENDERING ENGINE
+       * 5. RENDERING ENGINE (Dynamische Level-Farben)
        ********************************************************************/
       function drawMaze() {
-        ctx.fillStyle = "#090d16";
+        const design = getCurrentDesign();
+        ctx.fillStyle = design.floorBg;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         for (let r = 0; r < ROWS; r++) {
@@ -1564,9 +1770,9 @@
             const y = r * TILE_SIZE;
 
             if (tile === 1) {
-              ctx.fillStyle = "#1e293b";
+              ctx.fillStyle = design.wallFill;
               ctx.fillRect(x + 1, y + 1, TILE_SIZE - 2, TILE_SIZE - 2);
-              ctx.strokeStyle = "#d97706";
+              ctx.strokeStyle = design.wallStroke;
               ctx.lineWidth = 1.5;
               ctx.strokeRect(x + 2.5, y + 2.5, TILE_SIZE - 5, TILE_SIZE - 5);
             } else if (tile === 4) {
@@ -1672,22 +1878,23 @@
       function drawLevelBanner() {
         if (levelBannerTimer <= 0 || gameState !== "PLAYING") return;
         const cfg = getLevelConfig(level);
+        const design = getCurrentDesign();
         const alpha = Math.min(1, levelBannerTimer / 30);
 
         ctx.save();
         ctx.globalAlpha = alpha;
-        const boxW = 340;
-        const boxH = 54;
+        const boxW = 370;
+        const boxH = 56;
         const boxX = (canvas.width - boxW) / 2;
         const boxY = 188;
 
         ctx.fillStyle = "rgba(9, 13, 22, 0.92)";
         ctx.fillRect(boxX, boxY, boxW, boxH);
-        ctx.strokeStyle = "#fbbf24";
+        ctx.strokeStyle = design.wallStroke;
         ctx.lineWidth = 2;
         ctx.strokeRect(boxX, boxY, boxW, boxH);
 
-        ctx.font = 'bold 12px "Press Start 2P", monospace';
+        ctx.font = 'bold 11px "Press Start 2P", monospace';
         ctx.textAlign = "center";
         ctx.fillStyle = "#fbbf24";
         ctx.fillText(
@@ -1697,12 +1904,12 @@
         );
 
         ctx.font = "600 11px Inter, sans-serif";
-        ctx.fillStyle = "#38bdf8";
-        ctx.fillText(
-          `Ayran-Boost: ${(cfg.boostFrames / 60).toFixed(1)}s  •  KI-Fokus: ${Math.round(cfg.baseTracking * 100)}%`,
-          canvas.width / 2,
-          boxY + 42,
-        );
+        ctx.fillStyle = level >= 6 ? "#f43f5e" : "#38bdf8";
+        const subInfo =
+          level >= 6
+            ? `🔥 MAX-SPEED FÜR GEMÜSEVERWEIGERER! • KI: ${Math.round(cfg.baseTracking * 100)}%`
+            : `Ayran-Boost: ${(cfg.boostFrames / 60).toFixed(1)}s  •  KI-Fokus: ${Math.round(cfg.baseTracking * 100)}%`;
+        ctx.fillText(subInfo, canvas.width / 2, boxY + 42);
         ctx.restore();
       }
 
@@ -1744,11 +1951,31 @@
         requestAnimationFrame(gameLoop);
       }
 
-      function showOverlay(title, subtitleHTML, btnText) {
+      function showOverlay(
+        title,
+        subtitleHTML,
+        btnText,
+        showScoreSubmit = false,
+      ) {
         const ov = document.getElementById("overlayScreen");
         document.getElementById("overlayTitle").textContent = title;
         document.getElementById("overlaySubtitle").innerHTML = subtitleHTML;
         document.getElementById("startBtn").textContent = btnText;
+
+        const scoreBox = document.getElementById("gameOverScoreBox");
+        if (showScoreSubmit) {
+          scoreBox.classList.remove("hidden");
+          const nameInput = document.getElementById("playerNameInput");
+          const saveBtn = document.getElementById("submitScoreBtn");
+          const statusEl = document.getElementById("submitScoreStatus");
+          nameInput.value = localStorage.getItem("bakiLastPlayerName") || "";
+          saveBtn.disabled = false;
+          statusEl.textContent = "";
+          setTimeout(() => nameInput.focus(), 80);
+        } else {
+          scoreBox.classList.add("hidden");
+        }
+
         ov.classList.remove("hidden");
       }
 
@@ -1782,6 +2009,7 @@
             "SPIEL PAUSIERT",
             "Kurze Verschnaufpause für Baki! Der Döner bleibt warm.",
             "▶ WEITERSPIELEN",
+            false,
           );
         } else if (gameState === "PAUSED") {
           hideOverlay();
@@ -1793,7 +2021,6 @@
       function setBakiDirection(newDir) {
         if (!newDir || newDir === DIRS.NONE) return;
 
-        // If on Start screen, pressing any movement key or D-Pad button starts the game immediately!
         if (gameState === "START") {
           startNewGame(newDir);
           return;
@@ -1804,10 +2031,19 @@
         baki.nextDir = newDir;
       }
 
-      // Global Keyboard Listener (captures Arrow keys & WASD reliably without scrolling)
+      // Global Keyboard Listener (ignoriert Tasten, während man seinen Namen beim Game Over eintippt!)
       window.addEventListener(
         "keydown",
         (e) => {
+          const nameInput = document.getElementById("playerNameInput");
+          if (document.activeElement === nameInput) {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              document.getElementById("submitScoreBtn").click();
+            }
+            return;
+          }
+
           const code = e.code;
           const key = e.key.toLowerCase();
 
@@ -1850,7 +2086,7 @@
         { passive: false },
       );
 
-      // Interactive D-Pad Buttons (works with both Mouse Click & Touch)
+      // Interactive D-Pad Buttons
       document.querySelectorAll(".dpad-btn").forEach((btn) => {
         const handleInput = (e) => {
           e.preventDefault();
@@ -1893,7 +2129,6 @@
         { passive: true },
       );
 
-      // Clicking the canvas guarantees keyboard focus in iframe / VS Code preview
       canvas.addEventListener("mousedown", () => {
         canvas.focus();
       });
@@ -1916,6 +2151,31 @@
         document.getElementById("muteIcon").textContent = isMuted ? "🔇" : "🔊";
         canvas.focus();
       });
+
+      // Game-Over Score Speichern Button
+      document
+        .getElementById("submitScoreBtn")
+        .addEventListener("click", async () => {
+          if (!window.BakiLeaderboard) return;
+          const nameInput = document.getElementById("playerNameInput");
+          const saveBtn = document.getElementById("submitScoreBtn");
+          const statusEl = document.getElementById("submitScoreStatus");
+
+          saveBtn.disabled = true;
+          statusEl.className = "text-[11px] mt-1.5 min-h-[16px] text-amber-300";
+          statusEl.textContent = "Speichere...";
+
+          const res = await window.BakiLeaderboard.submitScore(
+            nameInput.value,
+            score,
+            level,
+          );
+          statusEl.className = `text-[11px] mt-1.5 min-h-[16px] font-medium ${
+            res.ok ? "text-emerald-400" : "text-rose-400"
+          }`;
+          statusEl.textContent = res.msg;
+          if (!res.ok) saveBtn.disabled = false;
+        });
 
       // Initialize Everything on Window Load
       window.onload = function () {
@@ -1941,6 +2201,230 @@
         updateHUD();
         gameLoop();
       };
+    </script>
+
+    <!-- =====================================================================
+         7. GOOGLE FIREBASE LEADERBOARD MODULE (Mit lokalem Fallback)
+         ===================================================================== -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+      import {
+        getDatabase,
+        ref,
+        get,
+        set,
+        query,
+        orderByChild,
+        limitToLast,
+      } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+      // HIER DEINE FIREBASE DATEN EINTRAGEN (aus der Google Firebase Console):
+      const firebaseConfig = {
+        apiKey: "AIzaSyD3dGHP8idIfpSEkARk-F5g-j1eMWpDZuU",
+
+        authDomain: "baki-kebab.firebaseapp.com",
+
+        databaseURL:
+          "https://baki-kebab-default-rtdb.europe-west1.firebasedatabase.app",
+
+        projectId: "baki-kebab",
+
+        storageBucket: "baki-kebab.firebasestorage.app",
+
+        messagingSenderId: "567352394188",
+
+        appId: "1:567352394188:web:55aeb69cff5d0bb3bf1d69",
+      };
+
+      const LOCAL_STORAGE_KEY = "bakiDoenerLeaderboardV1";
+      const badgeEl = document.getElementById("lbStatusBadge");
+      let db = null;
+
+      const isConfigured =
+        firebaseConfig.apiKey !== "HIER_DEIN_API_KEY" &&
+        firebaseConfig.databaseURL.startsWith("https://");
+
+      if (isConfigured) {
+        try {
+          const app = initializeApp(firebaseConfig);
+          db = getDatabase(app);
+          badgeEl.textContent = "🌍 Online";
+          badgeEl.className =
+            "text-[9px] px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-700/50 font-semibold";
+        } catch (e) {
+          console.warn("Firebase Fehler, nutze lokalen Speicher:", e);
+        }
+      }
+
+      function normalizeKey(name) {
+        return name
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9äöüß_-]/g, "");
+      }
+
+      async function loadLeaderboard() {
+        const tbody = document.getElementById("leaderboardTableBody");
+        let list = [];
+
+        if (db) {
+          try {
+            const q = query(
+              ref(db, "leaderboard"),
+              orderByChild("score"),
+              limitToLast(25),
+            );
+            const snap = await get(q);
+            if (snap.exists()) {
+              snap.forEach((child) => {
+                list.push(child.val());
+              });
+            }
+          } catch (e) {
+            console.error("Fehler beim Laden des Online-Leaderboards:", e);
+          }
+        } else {
+          try {
+            const raw = JSON.parse(
+              localStorage.getItem(LOCAL_STORAGE_KEY) || "{}",
+            );
+            list = Object.values(raw);
+          } catch (e) {
+            list = [];
+          }
+        }
+
+        list.sort((a, b) => b.score - a.score);
+        const top10 = list.slice(0, 10);
+
+        if (top10.length > 0 && window.syncHighScoreFromLeaderboard) {
+          window.syncHighScoreFromLeaderboard(top10[0].score);
+        }
+
+        if (top10.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" class="py-3 text-center text-slate-500 text-[11px]">Noch keine Einträge – hol dir Platz 1!</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = top10
+          .map((entry, idx) => {
+            const medal =
+              idx === 0
+                ? "🥇"
+                : idx === 1
+                  ? "🥈"
+                  : idx === 2
+                    ? "🥉"
+                    : `${idx + 1}.`;
+            const rowColor =
+              idx === 0
+                ? "text-amber-400 font-bold"
+                : idx === 1
+                  ? "text-slate-200 font-semibold"
+                  : idx === 2
+                    ? "text-amber-600 font-semibold"
+                    : "text-slate-300";
+            const safeName = String(entry.name || "BAKI").replace(
+              /[<>&"']/g,
+              "",
+            );
+            return `<tr class="${rowColor}">
+              <td class="py-1">${medal}</td>
+              <td class="py-1 truncate max-w-[110px]">${safeName}</td>
+              <td class="py-1 text-right font-pixel text-[10px]">${Number(entry.score || 0)}</td>
+              <td class="py-1 text-right text-[11px] text-sky-400">${Number(entry.level || 1)}</td>
+            </tr>`;
+          })
+          .join("");
+      }
+
+      async function submitScore(rawName, newScore, reachedLevel) {
+        const cleanName = rawName.trim().toUpperCase().slice(0, 15);
+        const playerKey = normalizeKey(cleanName);
+
+        if (!playerKey || playerKey.length < 2) {
+          return {
+            ok: false,
+            msg: "Bitte mindestens 2 Buchstaben/Zahlen eingeben!",
+          };
+        }
+
+        localStorage.setItem("bakiLastPlayerName", cleanName);
+
+        if (db) {
+          try {
+            const playerRef = ref(db, `leaderboard/${playerKey}`);
+            const snap = await get(playerRef);
+
+            if (snap.exists()) {
+              const oldScore = Number(snap.val().score || 0);
+              if (oldScore >= newScore) {
+                await loadLeaderboard();
+                return {
+                  ok: false,
+                  msg: `Dein Rekord liegt schon bei ${oldScore} Pkt. (nur bester Score zählt!).`,
+                };
+              }
+            }
+
+            await set(playerRef, {
+              name: cleanName,
+              score: Number(newScore),
+              level: Number(reachedLevel),
+              updatedAt: Date.now(),
+            });
+
+            await loadLeaderboard();
+            return {
+              ok: true,
+              msg: "🔥 Neuer Rekord im Online-Leaderboard gespeichert!",
+            };
+          } catch (e) {
+            console.error("Firebase Write Error:", e);
+            return {
+              ok: false,
+              msg: "Fehler beim Speichern (prüfe Firebase Rules / Config).",
+            };
+          }
+        } else {
+          // Lokaler Speicher (gleiche Regel: nur bester Score pro Name!)
+          let store = {};
+          try {
+            store = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "{}");
+          } catch (e) {
+            store = {};
+          }
+
+          if (store[playerKey] && Number(store[playerKey].score) >= newScore) {
+            await loadLeaderboard();
+            return {
+              ok: false,
+              msg: `Dein Rekord (${store[playerKey].score} Pkt.) ist höher – nicht überschrieben!`,
+            };
+          }
+
+          store[playerKey] = {
+            name: cleanName,
+            score: Number(newScore),
+            level: Number(reachedLevel),
+            updatedAt: Date.now(),
+          };
+
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(store));
+          await loadLeaderboard();
+          return {
+            ok: true,
+            msg: "🏆 Neuer Rekord in der Bestenliste gespeichert!",
+          };
+        }
+      }
+
+      window.BakiLeaderboard = {
+        loadLeaderboard,
+        submitScore,
+      };
+
+      loadLeaderboard();
     </script>
   </body>
 </html>
