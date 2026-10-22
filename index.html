@@ -7,7 +7,6 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
     <title>Baki's Döner Jagd</title>
-    <!-- Suchmaschinen-Beschreibung (erscheint als Text unter dem Link bei Google) -->
     <meta
       name="google-site-verification"
       content="WbDfvMo8W3ZKcnj47f69M6vV6xLfA4vel8et0j56m0Y"
@@ -366,7 +365,7 @@
               <strong class="text-rose-400">Anti-Döner-Fraktion</strong> aus!
             </p>
 
-            <!-- Game Over Leaderboard Name-Eingabe (Sauber untereinander zentriert) -->
+            <!-- Game Over Leaderboard Name-Eingabe -->
             <div
               id="gameOverScoreBox"
               class="hidden w-full max-w-xs bg-slate-900/95 border border-amber-500/40 rounded-xl p-3.5 mb-4 shadow-lg flex flex-col items-center gap-2.5"
@@ -615,7 +614,7 @@
                   1. Brokkoli-Boss
                 </div>
                 <div class="text-[10px] text-slate-400">
-                  Aggressives Grünzeug auf direkter Verfolgungsjagd</strong>!
+                  Aggressives Grünzeug auf direkter Verfolgungsjagd!
                 </div>
               </div>
             </div>
@@ -633,7 +632,7 @@
                   2. Die Hantel
                 </div>
                 <div class="text-[10px] text-slate-400">
-                  Schweres Eisen – will Baki ins Fitnessstudio zwingen</strong>!
+                  Schweres Eisen – will Baki ins Fitnessstudio zwingen!
                 </div>
               </div>
             </div>
@@ -651,7 +650,7 @@
                   3. Die Salat-Bowl
                 </div>
                 <div class="text-[10px] text-slate-400">
-                   Kalorienarme Schüssel ohne Soße und ohne Spaß</strong>!
+                  Kalorienarme Schüssel ohne Soße und ohne Spaß!
                 </div>
               </div>
             </div>
@@ -669,7 +668,7 @@
                   4. Kampfsport-Karotte
                 </div>
                 <div class="text-[10px] text-slate-400">
-                  Trägt ein schwarzes Stirnband und teilt Vitamin-Kicks aus</strong>!
+                  Trägt ein schwarzes Stirnband und teilt Vitamin-Kicks aus!
                 </div>
               </div>
             </div>
@@ -678,11 +677,12 @@
 
         <!-- Quick Tip Box -->
         <div
-          class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3.5 text-xs text-amber-200/90 leading-relaxed"
+          class="bg-cyan-500/10 border border-cyan-400/30 rounded-2xl p-3.5 text-xs text-cyan-200/90 leading-relaxed"
         >
-          <strong class="text-amber-400">💡 Ayran-Power:</strong>
-          Trinkst du Ayran, verwandeln sich alle Gegner in leckere
-          Fast-Food-Klassiker!
+          <strong class="text-cyan-300">💡 Ayran-Power:</strong>
+          Trinkst du Ayran, verwandeln sich alle Gegner in
+          <strong class="text-white"> leuchtendes Fast Food</strong>! Schnapp
+          sie dir für fette Bonus-Punkte!
         </div>
       </div>
     </div>
@@ -780,11 +780,12 @@
       const sfx = new SoundEffects();
 
       /********************************************************************
-       * 2. PIXEL ART MATRICES (16x16 Crisp Pixel Sprites)
+       * 2. PIXEL ART MATRICES (16x16 Canvas with Unified 14x14 Bounding Box)
        ********************************************************************/
       const PALETTE = {
         ".": null,
         K: "#090d16", // Outline
+        I: "#bae6fd", // Ayran-Neon-Outline (Hell-Cyan) für Boost-Fast-Food
         J: "#18181b",
         D: "#27272a",
         V: "#2b1d0e",
@@ -808,11 +809,13 @@
         X: "#d97706",
         C: "#9a3412",
         F: "#78350f", // Fleisch / Kruste
-        BUN: "#d97706", // Burger Bun
       };
 
+      // Alle Charakter-, Gegner- und Boost-Sprites nutzen nun konsistent die Zeilen 1..14
+      // und Spalten 1..14 (einheitliche 14x14 Bounding Box für identische optische Größe).
       const SPRITES = {
         BAKI_DOWN: [
+          "................",
           "....KKKKKKKK....",
           "...KDDDDDDDDK...",
           "..KDDDDGGDDDDK..",
@@ -822,51 +825,50 @@
           ".KTTWKTTTTKWTTK.",
           ".KTTTTTUUUTTTTK.",
           ".KTTVVVVVVVVTTK.",
-          "..KVVVVTTVVVVK..",
-          ".KWWKJJGGJJKKWWK",
-          "KWWWKJJGGJJKWWWK",
-          "KWWWKJGGGGJKWWWK",
-          "KWWKKJJGGJJKKWWK",
-          ".KTTKJJKKJJKTTK.",
-          "..KK.KK..KK.KK..",
+          ".KWWKJJGGJJKKWW.",
+          ".KWWKJJGGJJKWWW.",
+          ".KWWKJGGGGJKWWW.",
+          "..KTTKJJKKJJKTT.",
+          "...KK.KK..KK.KK.",
+          "................",
         ],
 
         BAKI_UP: [
+          "................",
           "....KKKKKKKK....",
           "...KDDDDDDDDK...",
           "..KDDDDDDDDDDK..",
           "..KKKKGGGGKKKK..",
           "..KTTTTTTTTTTK..",
           "..KKKKKKKKKKKK..",
-          ".KWWKJJGGRJJKWWK",
-          "KWWWKJGAAAGJKWWW",
-          "KWWWKJGGGGGJKWWW",
-          "KWWWKJJAAGJJKWWW",
-          "KWWWKJGGGGRJKWWW",
-          "KWWWKJJGGGJJKWWW",
-          "KWWKKGGGGGGGGKKW",
-          ".KTTKJJKKKKJJKTK",
-          "..KK.KK....KK.KK",
+          ".KWWKJJGGRJJKWW.",
+          ".KWWKJGAAAGJKWW.",
+          ".KWWKJGGGGGJKWW.",
+          ".KWWKJJAAGJJKWW.",
+          ".KWWKJGGGGRJKWW.",
+          ".KWWKGGGGGGGGKW.",
+          "..KTTKJJKKJJKTK.",
+          "...KK.KK..KK.KK.",
           "................",
         ],
 
         BAKI_RIGHT: [
+          "................",
           "....KKKKKKKK....",
           "...KDDDDDDDDK...",
-          "..KDDDDDDDDDDKKK",
-          "..KKKKKKKKKKKKKK",
+          "..KDDDDDDDDDDKK.",
+          "..KKKKKKKKKKKKK.",
           "..KTTTTTTTTTK...",
           "..KTTTTTTTKKTK..",
           "..KTTTTTTTWKTK..",
           "..KTTTTTTTUUTUK.",
           "..KTTTVVVVVVVVK.",
-          "...KKVVVVVVVVKK.",
           "..KJJWWWWKJJGK..",
           ".KJJWWGGWWKJJGK.",
           ".KJJWWWWWWKJJGK.",
           "..KJJWTTWWKJJGK.",
-          "...KJJKKKKJJK...",
           "...KKK....KKK...",
+          "................",
         ],
 
         DOENER: [
@@ -883,15 +885,15 @@
           "...KBBBQQBBBK...",
           "....KBBBBBBK....",
           "....KBBQBBBK....",
-          "     KBBBBK.....",
+          ".....KBBBBK.....",
           "......KKKK......",
           "................",
         ],
 
         AYRAN: [
-          ".........KKK....",
-          "........KRRK....",
-          "........KRRK....",
+          "................",
+          "........KKKK....",
+          ".......KRRK.....",
           "..KKKKKKKKKKKK..",
           ".KWWWWWWWWWWWWK.",
           "..KKKKKKKKKKKK..",
@@ -907,176 +909,208 @@
           "................",
         ],
 
+        // 1. BROKKOLI-BOSS (14x14 Box)
         ENEMY_BROKKOLI: [
-          "....KKKKKKKK....",
-          "..KKLLLLLLLLKK..",
-          ".KLLLLLLLLLLLLK.",
-          "KLLLLKLLLLKLLLLK",
-          "KLLLEKKLLKKELLLK",
-          "KLLLWKKEEKWLLLLK",
-          "KLLLWKKEEKWLLLLK",
+          "................",
+          "...KKKKKKKKKK...",
+          "..KLLLLLLLLLLK..",
+          ".KLLLLKLLKLLLLK.",
+          ".KLLLEKLLKELLLK.",
+          ".KLLLWKEEKWLLLK.",
+          ".KLLLWKEEKWLLLK.",
           ".KLLLLLLLLLLLLK.",
           "..KKKLLLLLLKKK..",
-          "....KEEEEEEK....",
-          "....KEKWWKEK....",
-          "....KEEEEEEK....",
-          ".....KEEEEK.....",
-          ".....KE..EK.....",
+          "...KKEEEEEEKK...",
+          "...KEEKWWKEEK...",
+          "...KEEEEEEEEK...",
+          "....KEEEEEEE....",
           "....KKK..KKK....",
+          "...KKKK..KKKK...",
           "................",
         ],
 
+        // 2. DIE HANTEL (14x14 Box - Kräftige Gewichtsscheiben für gleiche Präsenz)
         ENEMY_HANTEL: [
           "................",
-          ".KKKK......KKKK.",
-          "KDDDDK....KDDDDK",
-          "KDSDDKKKKKKDDSDK",
-          "KDSDDDDDDDDDDSDK",
-          "KDSDDKWWWWKDDSDK",
-          "KDSDDKWKKWKDDSDK",
-          "KDSDDKWWWWKDDSDK",
-          "KDSDDKKKKKKDDSDK",
-          "KDSDDDDDDDDDDSDK",
-          "KDDDDK....KDDDDK",
-          ".KKKK......KKKK.",
-          "................",
-          "................",
-          "................",
+          "..KKKK....KKKK..",
+          ".KDDDDK..KDDDDK.",
+          ".KDSDDKKKKDDSDK.",
+          ".KDSDDDDDDDDSDK.",
+          ".KDSDDKWWKDDSDK.",
+          ".KDSDDKKKKDDSDK.",
+          ".KDSDDKWWKDDSDK.",
+          ".KDSDDKWWKDDSDK.",
+          ".KDSDDKKKKDDSDK.",
+          ".KDSDDDDDDDDSDK.",
+          ".KDSDDKKKKDDSDK.",
+          ".KDDDDK..KDDDDK.",
+          "..KKKK....KKKK..",
+          "..KKKK....KKKK..",
           "................",
         ],
 
+        // 3. DIE SALAT-BOWL (14x14 Box)
         ENEMY_SALAT: [
-          "....KKK..KKK....",
-          "..KKLLLRRLLLKK..",
+          "................",
+          "...KKK....KKK...",
+          "..KLLLRRRRLLLK..",
           ".KLLLLRRRRLLLLK.",
           ".KLLWWLLLLWWLLK.",
-          "KLLLEELLLLLEELLK",
-          "KKKKKKKKKKKKKKKK",
-          "KRRRRRRRRRRRRRRK",
-          "KRRKWWWWWWWWKRRK",
-          ".KRKWKKWWKKWKRK.",
+          ".KLLLEELLLEELLK.",
+          ".KKKKKKKKKKKKKK.",
+          ".KRRRRRRRRRRRRK.",
           ".KRRKWWWWWWKRRK.",
+          "..KRKWKWWKWKRK..",
+          "..KRRKWWWWKRRK..",
           "..KRRRRRRRRRRK..",
-          "..KRRWWWWWWWRK..",
+          "...KRRWWWWWRK...",
           "...KRRRRRRRRK...",
           "....KKKKKKKK....",
           "................",
+        ],
+
+        // 4. KAMPFSPORT-KAROTTE (14x14 Box - breitere Schultern/Blätter)
+        ENEMY_KAROTTE: [
+          "................",
+          "...KKKK..KKKK...",
+          "..KLLLLKKLLLLK..",
+          "...KLLLLLLLLK...",
+          "..KKOOOOOOOOOK..",
+          ".KKKKKKKKKKKKKK.",
+          ".KDDDDDDDDDDDDK.",
+          ".KKKKKKKKKKKKKK.",
+          "..KOOWKKOOKWOK..",
+          "..KOOWKKOOKWOK..",
+          "..KOOOOOOOOOOK..",
+          "...KOOPPPPOOK...",
+          "...KOOOOOOOOK...",
+          "....KOOOOOOK....",
+          ".....KKKKKK.....",
           "................",
         ],
 
-        ENEMY_KAROTTE: [
-          ".....KK..KK.....",
-          "....KLLKKLLK....",
-          "....KLLLLLLK....",
-          ".....KKKKKK.....",
-          "...KKOOOOOOKK...",
-          "..KKKKKKKKKKKKK.",
-          "..KDDDDDDDDDDKKK",
-          "..KKKKKKKKKKKK..",
-          "..KOOWKKOOKWOK..",
-          "...KOWKKOOKWOK..",
-          "...KOOOOOOOOOK..",
-          "....KOOPPPPOOK..",
-          "....KOOOOOOOK...",
-          "     KOOPPOK....",
-          "......KOOOK.....",
-          ".......KKK......",
-        ],
-
-        // 1. POMMES-TÜTE (Ersetzt Brokkoli im Ayran-Boost)
+        // 1. POMMES-TÜTE IM BOOST (14x14 Box)
         BOOST_POMMES: [
           "................",
-          "....KKKKKKK.....",
-          "...KYYYYYYYK....",
-          "..KYYWYYWYYYK...",
-          "..KRRWWWWWRK....",
-          "..KRRWYYYYWRK...",
-          "..KRRWYYYYWRK...",
-          "..KRRWYYYYWRK...",
-          "..KRRWYYYYWRK...",
-          "..KRRWYYYYWRK...",
+          "..KKKKKKKKKKKK..",
+          ".KYYYYWYYWYYYYK.",
+          ".KYYWYYYYYYWYYK.",
+          ".KYYYYWYYWYYYYK.",
+          ".KRRRRWWWWWRRRK.",
+          ".KRRRWYYYYWRRRK.",
+          ".KRRRWYYYYWRRRK.",
+          ".KRRRWYYYYWRRRK.",
+          ".KRRRWYYYYWRRRK.",
+          ".KRRRWYYYYWRRRK.",
           "..KRRWWWWWWWRK..",
-          "...KRRRRRRRRK...",
-          "....KKKKKKKK....",
-          "................",
-          "................",
+          "..KRRRRRRRRRRK..",
+          "...KKKKKKKKKK...",
+          "...KKKKKKKKKK...",
           "................",
         ],
 
-        // 2. BURGER (Ersetzt Hantel im Ayran-Boost)
+        // 2. BURGER IM BOOST (14x14 Box)
         BOOST_BURGER: [
           "................",
-          ".....KKKKKK.....",
-          "....KBBBBBBK....",
-          "...KBWWBWWBWWK...",
+          "...KKKKKKKKKK...",
           "..KBBBBBBBBBBK..",
-          "..KLLLLLLLLLLK..",
-          "..KFFFFFFFFFFK..",
-          "..KYYWYYYYWYYK..",
-          "..KFFFFFFFFFFK..",
+          ".KBBWWBWWBWWBBK.",
+          ".KBBBBBBBBBBBBK.",
+          ".KKKKKKKKKKKKKK.",
+          ".KLLLLLLLLLLLLK.",
+          ".KYYYYYYYYYYYYK.",
+          ".KFFFFFFFFFFFFK.",
+          ".KYYWYYYYYYWYYK.",
+          ".KFFFFFFFFFFFFK.",
+          ".KKKKKKKKKKKKKK.",
+          ".KBBBBBBBBBBBBK.",
           "..KBBBBBBBBBBK..",
-          "...KBBBBBBBBK...",
-          "....KKKKKKKK....",
-          "................",
-          "................",
-          "................",
+          "...KKKKKKKKKK...",
           "................",
         ],
 
-        // 3. PIZZA (Ersetzt Salat im Ayran-Boost)
+        // 3. PIZZA IM BOOST (14x14 Box)
         BOOST_PIZZA: [
           "................",
-          ".......KK.......",
-          "......KYYK......",
+          "......KKKK......",
           ".....KYYYYK.....",
           "....KYYRRYYK....",
           "...KYYYYYYYYK...",
+          "...KYYRRYYRRY...",
+          "..KYYYYYYYYYYK..",
           "..KYYRRYYRRYYK..",
           ".KYYYYYYYYYYYYK.",
-          "KXXXKYYYYYYYKXXXK",
-          "KXXXXKKKKKKKXXXXK",
-          "KKKKKKKKKKKKKKKK",
-          "................",
-          "................",
-          "................",
-          "................",
+          ".KYYRRYYYYRRYYK.",
+          ".KYYYYYYYYYYYYK.",
+          ".KXXXKKKKKKXXXK.",
+          ".KXXXXXXXXXXXXK.",
+          "..KKKKKKKKKKKK..",
+          "...KKKKKKKKKK...",
           "................",
         ],
 
-        // 4. PASTA (Ersetzt Karotte im Ayran-Boost)
+        // 4. PASTA IM BOOST (14x14 Box - volle Schüssel statt flacher Teller)
         BOOST_PASTA: [
           "................",
-          ".....KKKKKK.....",
-          "....KYYYYYYK....",
-          "...KYYRRYYRYK...",
-          "..KYYRRRRRRYYK..",
+          "...KKKKKKKKKK...",
           "..KYYYYYYYYYYK..",
+          ".KYYRRRRRRRRYYK.",
+          ".KYYRRWYYWRRYYK.",
+          ".KYYYYRRRRYYYYK.",
+          ".KYYYYYYYYYYYYK.",
+          ".KKKKKKKKKKKKKK.",
+          ".KCCCCCCCCCCCCK.",
+          ".KCCWWWWWWWWCCK.",
+          ".KCCCCCCCCCCCCK.",
           "..KCCCCCCCCCCK..",
           "...KCCCCCCCCK...",
+          "...KKKKKKKKKK...",
           "....KKKKKKKK....",
-          "................",
-          "................",
-          "................",
-          "................",
-          "................",
-          "................",
           "................",
         ],
       };
 
       const spriteCache = {};
 
-      function createOffscreenSprite(matrix, mirrorX = false) {
+      function createOffscreenSprite(matrix, mirrorX = false, isBoost = false) {
         const c = document.createElement("canvas");
         c.width = 16;
         c.height = 16;
         const cx = c.getContext("2d");
 
+        // Falls es ein Boost-Fast-Food-Sprite ist, zeichnen wir eine leuchtende
+        // weiß-hellblaue Pixel-Aura um die Konturen, damit es sich stark vom Döner abhebt
+        if (isBoost) {
+          for (let r = 0; r < 16; r++) {
+            const rowStr = matrix[r] || "................";
+            for (let col = 0; col < 16; col++) {
+              const ch = rowStr[col];
+              if (ch && ch !== ".") {
+                const drawCol = mirrorX ? 15 - col : col;
+                cx.fillStyle = "#38bdf8";
+                for (let dr = -1; dr <= 1; dr++) {
+                  for (let dc = -1; dc <= 1; dc++) {
+                    const nr = r + dr;
+                    const nc = drawCol + dc;
+                    if (nr >= 0 && nr < 16 && nc >= 0 && nc < 16) {
+                      cx.fillRect(nc, nr, 1, 1);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
         for (let r = 0; r < 16; r++) {
           const rowStr = matrix[r] || "................";
           for (let col = 0; col < 16; col++) {
             const ch = rowStr[col];
-            const color = PALETTE[ch];
+            let color = PALETTE[ch];
+            if (isBoost && ch === "K") {
+              // Im Boost wird die schwarze Kontur durch ein strahlendes Eisblau/Weiß ersetzt
+              color = "#e0f2fe";
+            }
             if (color) {
               cx.fillStyle = color;
               const drawCol = mirrorX ? 15 - col : col;
@@ -1098,10 +1132,26 @@
         spriteCache.ENEMY_1 = createOffscreenSprite(SPRITES.ENEMY_HANTEL);
         spriteCache.ENEMY_2 = createOffscreenSprite(SPRITES.ENEMY_SALAT);
         spriteCache.ENEMY_3 = createOffscreenSprite(SPRITES.ENEMY_KAROTTE);
-        spriteCache.BOOST_0 = createOffscreenSprite(SPRITES.BOOST_POMMES);
-        spriteCache.BOOST_1 = createOffscreenSprite(SPRITES.BOOST_BURGER);
-        spriteCache.BOOST_2 = createOffscreenSprite(SPRITES.BOOST_PIZZA);
-        spriteCache.BOOST_3 = createOffscreenSprite(SPRITES.BOOST_PASTA);
+        spriteCache.BOOST_0 = createOffscreenSprite(
+          SPRITES.BOOST_POMMES,
+          false,
+          true,
+        );
+        spriteCache.BOOST_1 = createOffscreenSprite(
+          SPRITES.BOOST_BURGER,
+          false,
+          true,
+        );
+        spriteCache.BOOST_2 = createOffscreenSprite(
+          SPRITES.BOOST_PIZZA,
+          false,
+          true,
+        );
+        spriteCache.BOOST_3 = createOffscreenSprite(
+          SPRITES.BOOST_PASTA,
+          false,
+          true,
+        );
       }
 
       function renderPreviewCanvas(canvasId, spriteKey) {
@@ -1119,6 +1169,7 @@
       const TILE_SIZE = 28;
       const COLS = 19;
       const ROWS = 21;
+      const CHARACTER_DRAW_SIZE = 30; // Einheitliche Rendergröße (30x30px) für Baki & alle Gegner
 
       const LEVEL_DESIGNS = [
         {
@@ -1825,7 +1876,7 @@
       }
 
       /********************************************************************
-       * 5. RENDERING ENGINE
+       * 5. RENDERING ENGINE (WITH UNIFIED SPRITE SIZES & OPTION A AURA)
        ********************************************************************/
       function drawMaze() {
         const design = getCurrentDesign();
@@ -1848,13 +1899,14 @@
               ctx.fillStyle = "#f43f5e";
               ctx.fillRect(x, y + TILE_SIZE / 2 - 3, TILE_SIZE, 6);
             } else if (tile === 2) {
-              const bob = Math.sin(animTick * 0.08 + (r + c)) * 1.2;
+              // Sammel-Döner bewusst etwas kompakter (18x18px), damit Charaktere & Gegner (30x30px) klar dominieren
+              const bob = Math.sin(animTick * 0.08 + (r + c)) * 1.0;
               ctx.drawImage(
                 spriteCache.DOENER,
-                x + 4,
-                y + 4 + bob,
-                TILE_SIZE - 8,
-                TILE_SIZE - 8,
+                x + 5,
+                y + 5 + bob,
+                TILE_SIZE - 10,
+                TILE_SIZE - 10,
               );
             } else if (tile === 3) {
               const pulse = Math.sin(animTick * 0.15) * 2.5;
@@ -1891,7 +1943,7 @@
           ctx.shadowBlur = 14;
         }
 
-        const drawSize = TILE_SIZE + 4;
+        const drawSize = CHARACTER_DRAW_SIZE;
         ctx.drawImage(
           sprite,
           Math.round(baki.x - drawSize / 2),
@@ -1904,17 +1956,44 @@
 
       function drawEnemies() {
         enemies.forEach((en) => {
+          let isShowingBoost = false;
           let sprite = spriteCache[en.sprite];
+
           if (ayranTimer > 0) {
+            // In den letzten 2 Sekunden blinken die Gegner zwischen Fast Food und Normalzustand
             if (ayranTimer < 120 && Math.floor(animTick / 8) % 2 === 0) {
               sprite = spriteCache[en.sprite];
+              isShowingBoost = false;
             } else {
               sprite = spriteCache[en.boostSprite];
+              isShowingBoost = true;
             }
           }
 
           const hover = Math.sin(animTick * 0.2 + en.id) * 1.8;
-          const drawSize = TILE_SIZE + 2;
+          const drawSize = CHARACTER_DRAW_SIZE; // Einheitliche Größe (30x30px) genau wie Baki
+
+          ctx.save();
+
+          // Option A: Pulsierende Ayran-Neon-Aura & dezenter Energiekreis im Boost
+          if (isShowingBoost) {
+            const pulseRadius =
+              drawSize * 0.54 + Math.sin(animTick * 0.28 + en.id) * 2.2;
+
+            // Leuchtender Ayran-Hintergrundring für maximalen Kontrast zu den Dönern
+            ctx.beginPath();
+            ctx.arc(en.x, en.y + hover, pulseRadius, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(14, 165, 233, 0.28)";
+            ctx.fill();
+            ctx.lineWidth = 1.6;
+            ctx.strokeStyle =
+              ayranTimer < 120 ? "#fde047" : "rgba(125, 211, 252, 0.9)";
+            ctx.stroke();
+
+            ctx.shadowColor = "#38bdf8";
+            ctx.shadowBlur = 14;
+          }
+
           ctx.drawImage(
             sprite,
             Math.round(en.x - drawSize / 2),
@@ -1922,6 +2001,7 @@
             drawSize,
             drawSize,
           );
+          ctx.restore();
         });
       }
 
